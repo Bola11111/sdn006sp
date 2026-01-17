@@ -564,7 +564,7 @@ form.onsubmit = function(e) {
     .then(() => {
       // Karena no-cors tidak bisa baca respon, kita langsung 
       // asumsikan berhasil jika tidak masuk ke .catch
-      alert("BERHASIL!\nData Daftar Ulang " + dataObject.nama + " telah kami terima.");
+      alert("BERHASIL!\nData Daftar Ulang telah kami terima.");
       form.reset();
       selectedFiles = [];
       renderFileList();
@@ -583,3 +583,4 @@ form.onsubmit = function(e) {
 </body>
 
 </html>
+
