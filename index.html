@@ -558,17 +558,21 @@ form.onsubmit = function(e) {
 
     fetch(scriptURL, {
       method: 'POST',
-      mode: 'no-cors',
+      mode: 'no-cors', // Tetap gunakan no-cors agar tidak error CORS
       body: JSON.stringify(payload)
     })
     .then(() => {
+      // Karena no-cors tidak bisa baca respon, kita langsung 
+      // asumsikan berhasil jika tidak masuk ke .catch
       alert("BERHASIL!\nData Daftar Ulang " + dataObject.nama + " telah kami terima.");
       form.reset();
       selectedFiles = [];
       renderFileList();
-      show('home');
+      show('home'); // Ini akan mengembalikan user ke halaman depan (animasi)
     })
-    .catch(error => alert("ERROR: " + error.message))
+    .catch(error => {
+      alert("Gagal mengirim: " + error.message);
+    })
     .finally(() => {
       btn.disabled = false;
       btn.innerHTML = originalContent;
@@ -577,4 +581,5 @@ form.onsubmit = function(e) {
 };
 </script>
 </body>
+
 </html>
