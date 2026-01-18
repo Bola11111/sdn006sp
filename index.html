@@ -22,7 +22,7 @@
         }
 
         .overlay {
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.3);
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -33,16 +33,25 @@
         }
 
         .logo { width: 150px; margin-bottom: 20px; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)); }
-        h1 { margin: 0; font-size: 2.5em; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-        .motto { font-style: italic; margin-bottom: 40px; opacity: 0.9; }
+        /*atur judul*/
+		h1 { margin: 0; font-size: 2.5em; font-weight: bold; 
+		/* Arah Kanan, Arah Bawah, Blur(0=Tegas), Warna(1=Pekat) */
+        text-shadow: 5px 5px 0px rgba(0,0,0,1); }
+		/*atur motto*/
+        .motto {font-style: italic; font-weight: bold; 
+		margin-bottom: 40px; opacity: 1;
+		color:#080808;
+         max-width: 1000px;    /* Membatasi lebar agar teks turun ke bawah */
+         line-height: 1.6;    /* Memberi jarak antar baris kalimat */
+}
 
         .menu-wrapper {
             background: rgba(0, 0, 0, 0.7);
             padding: 25px 40px;
-            border-radius: 60px; /* Bentuk kapsul sesuai referensi Samarinda */
+            border-radius: 50px; /* Bentuk kapsul sesuai referensi Samarinda */
             display: flex;
             gap: 50px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(5px);
             border: 1px solid rgba(255,255,255,0.2);
         }
 
@@ -72,7 +81,7 @@
 
         <div class="menu-wrapper">
             
-			<a href="https://sites.google.com/view/link-sekolah-kamu" target="_blank" class="menu-item">
+			<a href="https://sites.google.com/admin.sd.belajar.id/sdn006sungaipinang/beranda" target="_blank" class="menu-item">
                 <div class="icon">🌐</div>
                 <div class="label">Web Sekolah</div>
             </a>
