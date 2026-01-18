@@ -93,26 +93,24 @@ input:focus { border-color: var(--primary); outline: none; background: #fff; }
         </select>
       </div>
       
-	<div style="display: flex; gap: 10px; margin-bottom: 20px;">
-		<div style="flex: 1;">
+	  <div class="form-group">
 		<label>NISN (10 Digit)</label>
 		<input type="number" name="nisn" oninput="limit(this, 10)">
 		</div>
 		
-		<div style="flex: 1;">
+		<div class="form-group">
 		<label>NIK Siswa (16 Digit)</label>
 		<input type="number" name="nik" oninput="limit(this, 16)" required>
 	  </div>
-	</div>
-	  
+		  
       <div class="form-group"><label>Nomor KK (16 Digit)</label><input type="number" name="no_kk" oninput="limit(this, 16)" required></div>
       
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <div class="form-group" style="flex: 1; min-width: 150px;">
+      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <div style="flex: 70%;">
           <label>Tempat Lahir</label>
           <input type="text" name="tmpt_lahir" required>
         </div>
-        <div class="form-group" style="flex: 1; min-width: 150px;">
+        <div style="flex: 30%;">
           <label>Tanggal Lahir</label>
           <input type="date" name="tgl_lahir" required>
         </div>
@@ -120,8 +118,7 @@ input:focus { border-color: var(--primary); outline: none; background: #fff; }
 
       <div class="form-group"><label>Nomor Akta Lahir</label><input type="text" name="no_akta" required></div>
 	  
-      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-      <div style="flex: 1;">
+       <div class="form-group">
         <label>Berkebutuhan Khusus Siswa</label>
         <select name="abk_siswa" required>
           <option value="">-- Pilih --</option>
@@ -144,7 +141,7 @@ input:focus { border-color: var(--primary); outline: none; background: #fff; }
           <option>autis</option>
         </select>
       </div>
-      <div style="flex: 1;">
+       <div class="form-group">
         <label>Agama</label>
         <select name="agama" required>
           <option value="">-- Pilih --</option>
@@ -158,8 +155,7 @@ input:focus { border-color: var(--primary); outline: none; background: #fff; }
           <option>lainnya</option>
         </select>
       </div>
-	</div>
-	
+		
       <div class="form-group"><label>Alamat</label><input type="text" name="alamat" required></div>
       
 	  <div style="display: flex; gap: 10px; margin-bottom: 20px;">
@@ -683,4 +679,5 @@ form.onsubmit = function(e) {
 </script>
 </body>
 </html>
+
 
