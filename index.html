@@ -19,8 +19,6 @@
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
-
-    /* Pakai File Internal (Gunakan ini jika gambar sudah diupload ke GitHub) */
     background-image: url("gambar02.png"); 
     
    }
@@ -42,35 +40,36 @@
         /* Logo dan Judul */
         .logo { width: 150px; margin-bottom: 20px; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)); }
         
-        h1 { 
-            margin: 0; 
-            font-size: 2.5em; 
-            font-weight: bold; 
-            text-shadow: 5px 5px 0px rgba(0,0,0,1); 
-        }
+    h1 { 
+        margin: 0; 
+        font-size: 3em;        /* Ukuran huruf di PC (misal: 3em untuk lebih besar) */
+        font-weight: bold; 
+        color: white;            /* UBAH WARNA HURUF DI SINI */
+        text-shadow: 5px 5px 0px rgba(0,0,0,1); /* Bayangan huruf */
+    }
 
         .motto {
-            font-style: italic; 
-            font-weight: bold; 
-            margin-bottom: 40px; 
-            opacity: 1;
-            color: #ffffff;
-            max-width: 1000px;
-            line-height: 1.6;
-            text-shadow: 2px 2px 0px #000000;
+           font-style: italic; 
+           font-weight: bold; 
+           font-size: 1.2em;        /* TAMBAHKAN INI jika ingin mengatur ukuran motto */
+           color: #0000;          /* UBAH WARNA MOTTO DI SINI */
+           margin-bottom: 40px; 
+           max-width: 1500px;
+           line-height: 1.6;
+           text-shadow: 2px 2px 0px #000000;
         }
 
         /* Kapsul Menu Utama */
         .menu-wrapper {
             background: rgba(0, 0, 0, 0.7);
             padding: 25px 40px;
-            border-radius: 50px;
+            border-radius: 30px;
             display: flex;
             gap: 40px;
             flex-wrap: wrap; /* Supaya menu turun ke bawah di HP */
             justify-content: center;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(1px);
+            border: 1px solid rgba(255,255,255,0.5);
             max-width: 95%;
         }
 
@@ -89,14 +88,17 @@
         .label { font-size: 0.85em; font-weight: 600; text-transform: uppercase; }
 
         /* --- PENGATURAN KHUSUS HP --- */
-        @media (max-width: 600px) {
-            h1 { font-size: 1.5em; }
-            .logo { width: 100px; }
-            .motto { font-size: 0.9em; margin-bottom: 30px; }
-            .menu-wrapper { gap: 20px; padding: 20px; border-radius: 30px; }
-            .menu-item { width: 85px; }
-            .icon { font-size: 35px; }
-            .label { font-size: 0.7em; }
+        @media (max-width: 600px)
+		{ 
+		h1 { 
+        font-size: 2em;    /* Ukuran Judul khusus di HP */
+        color: white;       /* Jika ingin warna judul di HP berbeda */
+        }
+        .motto { 
+        font-size: 0.9em;    /* Ukuran Motto khusus di HP */
+        color: #0000; 
+        }
+        /* ... kode lainnya ... */
         }
     </style>
 </head>
