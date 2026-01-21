@@ -37,7 +37,7 @@
     <h4 class="fw-bold mt-3">Layanan Mutasi Siswa</h4>
     <p class="text-muted mb-4">Silakan masukkan NISN untuk mengakses formulir.</p>
     <div class="mb-3 mx-auto" style="max-width: 320px;">
-      <input type="number" id="inputNisnKunci" class="form-control text-center fw-bold p-3 border-primary" placeholder="MASUKKAN NISN SISWA">
+      <input type="text" id="inputNisnKunci" class="form-control text-center fw-bold p-3 border-primary" placeholder="MASUKKAN NISN SISWA" inputmode="numeric">
     </div>
     <button id="btnVerifikasi" class="btn btn-primary btn-lg px-5 fw-bold w-100 shadow" onclick="verifikasiAkses()">BUAT FORMULIR BARU</button>
   </div>
@@ -118,12 +118,17 @@
   }
 
   function verifikasiAkses() {
-    const nisnInput = document.getElementById('inputNisnKunci').value;
-    if (!nisnInput) {
-      Swal.fire({ icon: 'warning', text: 'Harap Masukkan NISN !', confirmButtonColor: '#d33' });
-      return;
-    }
-    const siswa = master.find(x => x.nisn.toString().trim() === nisnInput.toString().trim());
+  // Ambil input sebagai string murni dan hapus spasi jika ada
+  const nisnInput = document.getElementById('inputNisnKunci').value.trim();
+  
+  if (!nisnInput) {
+    Swal.fire({ icon: 'warning', text: 'Harap Masukkan NISN !', confirmButtonColor: '#d33' });
+    return;
+  }
+
+  // Cari di master dengan mengubah keduanya menjadi string murni
+  const siswa = master.find(x => String(x.nisn).trim() === nisnInput);
+  
     if (siswa) {
       Swal.fire({
         title: 'Akses Diterima! ✅',
