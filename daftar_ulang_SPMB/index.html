@@ -95,7 +95,7 @@ input:focus { border-color: var(--primary); outline: none; background: #fff; }
       
 	  <div class="form-group">
 		<label>NISN (10 Digit)</label>
-		<input type="number" name="nisn" oninput="limit(this, 10)">
+		<input type="number" name="nisn" oninput="limit(this, 10)"required>
 		</div>
 		
 		<div class="form-group">
@@ -177,9 +177,9 @@ input:focus { border-color: var(--primary); outline: none; background: #fff; }
 	  <label>Kecamatan</label><input type="text" name="kecamatan" required>
 	  </div>
     </div>
-	
-	  
-	  <div class="form-group"><label>Kode POS</label><input type="number" name="kodepos" oninput="limit(this, 10)" required></div>
+		  
+	  <div class="form-group"><label>Kode POS</label><input type="number" name="kodepos" required>
+	  </div>
       
 	  <div style="display: flex; gap: 10px; margin-bottom: 20px;">
       <div style="flex: 1;">
@@ -545,35 +545,79 @@ input:focus { border-color: var(--primary); outline: none; background: #fff; }
 let selectedFiles = [];
 const form = document.getElementById('mainForm');
 
+// 1. FUNGSI NAVIGASI
 function show(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-function limit(el, max) {
-  if (el.value.length > max) el.value = el.value.slice(0, max);
+// 2. FUNGSI EYD OTOMATIS SAAT KETIK (Hanya kolom teks tertentu)
+function applyEYD(el) {
+  let start = el.selectionStart;
+  let val = el.value.toLowerCase().replace(/(^|\s)\S/g, (l) => l.toUpperCase());
+  el.value = val;
+  el.setSelectionRange(start, start);
 }
 
-document.querySelectorAll('.rupiah').forEach(inp => {
-  inp.addEventListener('keyup', function() {
-    let val = this.value.replace(/[^,\d]/g, '').toString();
-    let split = val.split(',');
-    let sisa = split[0].length % 3;
-    let rupiah = split[0].substr(0, sisa);
-    let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-    if (ribuan) {
-      let separator = sisa ? '.' : '';
-      rupiah += separator + ribuan.join('.');
+// 3. ATURAN INPUT (DIGIT & EYD)
+function setupInputRules() {
+  // Aturan EYD untuk kolom Nama, Alamat, dll
+  const eydFields = ['nama', 'tmpt_lahir', 'alamat', 'kelurahan', 'kecamatan', 'nama_ayah', 'nama_ibu', 'nama_wali', 'prestasi', 'tingkat_prestasi'];
+  eydFields.forEach(name => {
+    const el = document.getElementsByName(name)[0];
+    if (el) el.addEventListener('input', function() { applyEYD(this); });
+  });
+
+  // Aturan Hanya Angka (Proteksi Teks) & Limit Digit
+  const numericLimits = {
+    'nisn': 10,
+    'nik': 16,
+    'no_kk': 16,
+    'nik_ayah': 16,
+    'nik_ibu': 16,
+    'nik_wali': 16,
+    'thn_ayah': 4,
+    'thn_ibu': 4,
+    'thn_wali': 4,
+    'rt': 4,
+    'rw': 4,
+    'kodepos': 5,
+    'hp': 13,
+	'lk': 4,       // Lingkar Kepala (Periodik)
+    'tb': 4,       // Tinggi Badan (Periodik)
+    'bb': 4,       // Berat Badan (Periodik)
+	'anak_ke': 2,
+    'jml_saudara': 2,
+    'thn_pip': 4,  // Tahun PIP
+    'juara': 2     // Juara (Asumsi maks 2 digit misal juara 10)
+  };
+
+  Object.keys(numericLimits).forEach(name => {
+    const el = document.getElementsByName(name)[0];
+    if (el) {
+      el.type = "text"; // Ubah ke text agar kontrol manual lebih akurat
+      el.inputMode = "numeric";
+      el.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, numericLimits[name]);
+        validateForm();
+      });
     }
-    this.value = rupiah ? 'Rp ' + rupiah : '';
+  });
+}
+
+// 4. FORMAT RUPIAH
+document.querySelectorAll('.rupiah').forEach(inp => {
+  inp.addEventListener('input', function() {
+    let val = this.value.replace(/\D/g, '');
+    let formatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val || 0);
+    this.value = formatted.replace("Rp", "Rp ");
     validateForm();
   });
 });
 
+// 5. MANAJEMEN FILE
 const fileInput = document.getElementById('fileInput');
-const fileListContainer = document.getElementById('file-list');
-
 fileInput.addEventListener('change', function() {
   const newFiles = Array.from(this.files);
   if (selectedFiles.length + newFiles.length > 5) { alert("Maks 5 file!"); return; }
@@ -583,12 +627,13 @@ fileInput.addEventListener('change', function() {
 });
 
 function renderFileList() {
-  fileListContainer.innerHTML = selectedFiles.length === 0 ? '<p style="color:#888; font-size:13px;">Belum ada file.</p>' : "";
+  const container = document.getElementById('file-list');
+  container.innerHTML = selectedFiles.length === 0 ? '<p style="color:#888; font-size:13px;">Belum ada file.</p>' : "";
   selectedFiles.forEach((file, index) => {
     const div = document.createElement('div');
     div.style = "display:flex; justify-content:space-between; background:#fff; padding:10px; border-radius:10px; margin-bottom:5px; border:1px solid #eee; font-size:13px;";
-    div.innerHTML = `<span>${file.name}</span><button type="button" onclick="removeFile(${index})" style="color:red; border:none; background:none; cursor:pointer;"><i class="fas fa-trash"></i></button>`;
-    fileListContainer.appendChild(div);
+    div.innerHTML = `<span>📄 ${file.name}</span><button type="button" onclick="removeFile(${index})" style="color:red; border:none; background:none; cursor:pointer;"><i class="fas fa-trash"></i></button>`;
+    container.appendChild(div);
   });
 }
 
@@ -598,63 +643,52 @@ function removeFile(index) {
   validateForm();
 }
 
+// 6. VALIDASI TOMBOL KIRIM
 function validateForm() {
-  const reqs = form.querySelectorAll('[required]');
-  let filled = true;
+  const formReq = form.querySelectorAll('[required]');
+  let isValid = true;
   
-  reqs.forEach(r => { 
-    if (r.type === 'checkbox') {
-      if (!r.checked) filled = false; 
-    } else {
-      // Tombol tetap nonaktif jika ada kolom required yang kosong (selain angka 0)
-      if (r.value.trim() === "") {
-        filled = false;
-      }
-    }
+  formReq.forEach(input => {
+    if (input.type === 'checkbox') { if (!input.checked) isValid = false; }
+    else if (!input.value.trim()) { isValid = false; }
   });
 
-  // Tombol tetap nonaktif jika belum ada file yang diunggah
-  if (selectedFiles.length === 0) {
-    filled = false;
-  }
-
-  document.getElementById('btnKirim').disabled = !filled;
+  if (selectedFiles.length === 0) isValid = false;
+  document.getElementById('btnKirim').disabled = !isValid;
 }
 
-// Pantau setiap inputan
-form.addEventListener('input', validateForm);
-
-// Jalankan validasi saat halaman pertama kali dibuka
-document.addEventListener('DOMContentLoaded', validateForm);
-
+// 7. SUBMIT DATA
 form.onsubmit = function(e) {
   e.preventDefault();
   const btn = document.getElementById('btnKirim');
-  const originalContent = btn.innerHTML;
   const namaSiswa = document.getElementsByName('nama')[0].value;
   
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> MENGIRIM DATA...';
+  btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> PROSES PENGIRIMAN...';
 
   const formData = new FormData(form);
   const dataObject = Object.fromEntries(formData.entries());
 
-  const rupiahFields = form.querySelectorAll('.rupiah');
-  dataObject.penghasilan_ayah = rupiahFields[0].value || "Rp 0";
-  dataObject.penghasilan_ibu = rupiahFields[1].value || "Rp 0";
-  dataObject.penghasilan_wali = rupiahFields[2] ? (rupiahFields[2].value || "-") : "-";
+  // Ambil nilai rupiah manual
+  const rpAyah = document.querySelectorAll('.rupiah')[0]?.value || "Rp 0";
+  const rpIbu = document.querySelectorAll('.rupiah')[1]?.value || "Rp 0";
+  const rpWali = document.querySelectorAll('.rupiah')[2]?.value || "Rp 0";
+  
+  dataObject.penghasilan_ayah = rpAyah;
+  dataObject.penghasilan_ibu = rpIbu;
+  dataObject.penghasilan_wali = rpWali;
 
   const filePromises = selectedFiles.map(file => {
     return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = (e) => resolve({ base64: e.target.result, type: file.type, name: file.name });
+      reader.onload = (ev) => resolve({ base64: ev.target.result, type: file.type, name: file.name });
       reader.readAsDataURL(file);
     });
   });
 
   Promise.all(filePromises).then(files => {
     const payload = { ...dataObject, files: files };
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbya56t4XxEx6MM_gfmIHvaBKO0anfl6vrbYZYZmhNnWp2xbHIiajcnhYdsrFdKyCwZF/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwHiMDkuo9-i1-MF-KT92nNLjvkoy7o35AMwW9EPhcNQsTu3PcMTWrUQ8BJlHuwYERs/exec'; // GANTI DENGAN URL DEPLOY ANDA
 
     fetch(scriptURL, {
       method: 'POST',
@@ -663,19 +697,21 @@ form.onsubmit = function(e) {
     })
     .then(() => {
       document.getElementById('success-name').innerText = namaSiswa;
-      show('step-success'); 
-      form.reset();
-      selectedFiles = [];
-      renderFileList();
+      show('step-success');
     })
-    .catch(error => {
-      alert("Maaf, terjadi kesalahan: " + error.message);
+    .catch(err => {
+      alert("Error: " + err.message);
       btn.disabled = false;
-      btn.innerHTML = originalContent;
+      btn.innerHTML = 'KIRIM SEKARANG';
     });
   });
 };
 
+// Jalankan fungsi setup saat window siap
+window.onload = () => {
+  setupInputRules();
+  validateForm();
+};
 </script>
 </body>
 </html>

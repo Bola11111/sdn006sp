@@ -1,0 +1,105 @@
+// ================== KONFIGURASI AUTOMATIS ==================
+const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
+const FOLDER_ID = "1zvTvFLtPoH1PU-2Q9GmmLbu6KmS5asN96zijqu5-j-1jeIzViBH_Lpxh4S-IJBT5zxGhXMpw";
+const SHEET_NAME = "Respon";
+
+// Fungsi Pembantu: EYD (Kapital di awal kata)
+function formatEYD(text) {
+  if (!text) return "";
+  return text.toString().toLowerCase().trim().replace(/(^|\s)\S/g, function(l) { return l.toUpperCase(); });
+}
+
+// Fungsi Pembantu: Bersihkan Spasi Hantu Saja (Tanpa EYD)
+function cleanSpasi(text) {
+  if (!text) return "";
+  return text.toString().trim();
+}
+
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(30000);
+    const payload = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(SHEET_NAME);
+
+    if (!sheet) throw new Error("Sheet tidak ditemukan!");
+
+    // 1. PROSES FILE (Rename & Get URL)
+    let fileUrls = [];
+    if (payload.files && payload.files.length > 0) {
+      const folder = DriveApp.getFolderById(FOLDER_ID);
+      payload.files.forEach((f, i) => {
+        const extension = f.name.split('.').pop();
+        const base64Data = f.base64.split(',')[1];
+        const safeNama = payload.nama.replace(/[^a-zA-Z0-9]/g, "_");
+        const blob = Utilities.newBlob(Utilities.base64Decode(base64Data), f.type, `${safeNama}_${i + 1}.${extension}`);
+        const newFile = folder.createFile(blob);
+        fileUrls.push(newFile.getUrl());
+      });
+    }
+
+    // 2. SIMPAN DATA KE SHEET (Urutan Kolom A-BA)
+    sheet.appendRow([
+      new Date(),                             // [A] Timestamp
+      formatEYD(payload.nama),                // [B] Nama Siswa (EYD)
+      payload.jk,                             // [C]
+      "'" + cleanSpasi(payload.nisn),         // [D] NISN (String Protect)
+      "'" + cleanSpasi(payload.nik),          // [E] NIK (String Protect)
+      "'" + cleanSpasi(payload.no_kk),        // [F] KK (String Protect)
+      formatEYD(payload.tmpt_lahir),          // [G] Tempat Lahir (EYD)
+      payload.tgl_lahir,                      // [H]
+      cleanSpasi(payload.no_akta),            // [I] No Akta (Clean Spasi)
+      payload.abk_siswa,                      // [J]
+      payload.agama,                          // [K]
+      formatEYD(payload.alamat),              // [L] Alamat (EYD)
+      cleanSpasi(payload.rt),                 // [M]
+      cleanSpasi(payload.rw),                 // [N]
+      formatEYD(payload.kelurahan),           // [O] Kelurahan (EYD)
+      formatEYD(payload.kecamatan),           // [P] Kecamatan (EYD)
+      "'" + cleanSpasi(payload.kodepos),      // [Q]
+      payload.tinggal,                        // [R]
+      payload.transpor,                       // [S]
+      formatEYD(payload.nama_ayah),           // [T] Nama Ayah (EYD)
+      "'" + cleanSpasi(payload.nik_ayah),     // [U] NIK Ayah
+      cleanSpasi(payload.thn_ayah),           // [V]
+      payload.pdk_ayah,                       // [W]
+      payload.krj_ayah,                       // [X]
+      payload.penghasilan_ayah,               // [Y]
+      payload.abk_ayah,                       // [Z]
+      formatEYD(payload.nama_ibu),            // [AA] Nama Ibu (EYD)
+      "'" + cleanSpasi(payload.nik_ibu),      // [AB] NIK Ibu
+      cleanSpasi(payload.thn_ibu),            // [AC]
+      payload.pdk_ibu,                        // [AD]
+      payload.krj_ibu,                        // [AE]
+      payload.penghasilan_ibu,                // [AF]
+      payload.abk_ibu,                        // [AG]
+      formatEYD(payload.nama_wali),           // [AH] Nama Wali (EYD)
+      "'" + cleanSpasi(payload.nik_wali),     // [AI] NIK Wali
+      cleanSpasi(payload.thn_wali),           // [AJ]
+      payload.pdk_wali,                       // [AK]
+      payload.krj_wali,                       // [AL]
+      payload.penghasilan_wali,               // [AM]
+      cleanSpasi(payload.lk),                 // [AN]
+      cleanSpasi(payload.tb),                 // [AO]
+      cleanSpasi(payload.bb),                 // [AP]
+      cleanSpasi(payload.anak_ke),            // [AQ]
+      cleanSpasi(payload.jml_saudara),        // [AR]
+      payload.pkh_status,                     // [AS]
+      cleanSpasi(payload.no_pkh),             // [AT] No PKH (No EYD)
+      payload.pip_status,                     // [AU]
+      cleanSpasi(payload.thn_pip),            // [AV]
+      "'" + cleanSpasi(payload.hp),           // [AW] HP (String Protect)
+      formatEYD(payload.prestasi),            // [AX] Prestasi (EYD)
+      cleanSpasi(payload.juara),              // [AY]
+      formatEYD(payload.tingkat_prestasi),    // [AZ] Tingkat Prestasi (EYD)
+      fileUrls.join(" | ")                    // [BA] Link Berkas
+    ]);
+
+    return ContentService.createTextOutput(JSON.stringify({ "result": "success" })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}
