@@ -1,6 +1,6 @@
 // 1. PENGATURAN ID (Otomatis & Terkunci)
 const SS_ID = SpreadsheetApp.getActiveSpreadsheet().getId(); 
-const FOLDER_ID = "1FtP9q4A-CmKspG05i35y-SDvKmvCrm-lsuU49ir4czdE3-VVL3sptS5RfC48p6dCU49qP2Sz";
+const FOLDER_ID = "1cTSOxoMRfKX5WTEIAg4lATKiVeaypk73lCV116RWLdQP2jAbN3vXM1fMvXr8ShWEyPkBrMcv";
 const TEMPLATE_ID = "1UKd8DYjV07OaNq8-lqF0rSozO8WxMXRUk0xmdUf5zVU"; 
 
 function doGet(e) {
@@ -9,7 +9,7 @@ function doGet(e) {
     var sheet = SpreadsheetApp.openById(SS_ID).getSheetByName("database");
     var data = sheet.getDataRange().getDisplayValues(); 
     var dataSiswa = data.slice(1).map(function(r) {
-      // Pastikan index kolom sesuai dengan database Anda
+      // Index kolom: B=1 (Kelas), C=2 (Nama), D=3 (JK), E=4 (NISN), I=8 (Tempat), J=9 (Tgl Lahir)
       return { kelas: r[1], nama: r[2], jk: r[3], nisn: r[4], tempatLahir: r[8], tanggalLahir: r[9] };
     });
     return ContentService.createTextOutput(JSON.stringify(dataSiswa)).setMimeType(ContentService.MimeType.JSON);
@@ -23,22 +23,28 @@ function doPost(e) {
     var obj = data.obj;
     var fileData = data.fileData;
     var ss = SpreadsheetApp.openById(SS_ID);
-    var sheetMutasi = ss.getSheetByName("mutasi");
+    var sheetDB = ss.getSheetByName("database");
     var folder = DriveApp.getFolderById(FOLDER_ID);
 
-    // --- 1. PROSES WAKTU UNTUK FOOTNOTE & LABEL ---
+    // --- 1. CARI BARIS SISWA BERDASARKAN NISN (KOLOM E / INDEX 4) ---
+    var dataDB = sheetDB.getDataRange().getValues();
+    var rowIndex = -1;
+    for (var i = 1; i < dataDB.length; i++) {
+      if (String(dataDB[i][4]) === String(obj.nisn)) {
+        rowIndex = i + 1; // +1 karena index array mulai dari 0 dan ada header
+        break;
+      }
+    }
+
+    if (rowIndex === -1) throw new Error("NISN tidak ditemukan di database!");
+
+    // --- 2. PROSES WAKTU & LABEL ---
     var sekarang = new Date();
-    // Format untuk <<timestamp>> di dokumen (WITA)
     var teksTimestamp = Utilities.formatDate(sekarang, "GMT+8", "dd/MM/yyyy HH:mm");
-    
     var tglSplit = obj.tanggalMutasi.split("-"); 
     var tglLabel = tglSplit[2] + "-" + tglSplit[1] + "-" + tglSplit[0].substring(2); 
-    
-    // --- 2. VALIDASI DATA ANGKA ---
-    var nisnFix = "'" + obj.nisn;
-    var npsnFix = "'" + obj.npsn;
 
-    // --- 3. PROSES UPLOAD BUKTI ---
+    // --- 3. UPLOAD BUKTI ---
     var fileUrl = "-";
     if (fileData) {
       var namaFileBukti = "BUKTI_" + obj.nama.toUpperCase() + "_" + tglLabel;
@@ -46,32 +52,38 @@ function doPost(e) {
       fileUrl = folder.createFile(blobBukti).getUrl();
     }
 
-    // --- 4. INPUT DATA KE SHEET MUTASI ---
-    sheetMutasi.appendRow([
-      sekarang, obj.kelas, obj.nama, obj.jk, nisnFix, obj.tempatLahir, obj.tanggalLahir, 
-      obj.sekolahTujuan, npsnFix, obj.alamat, obj.kelurahan, obj.kecamatan, obj.kota, obj.provinsi,
-      "Mutasi", obj.tanggalMutasi, fileUrl 
-    ]);
+    // --- 4. UPDATE DATA KE KOLOM BC s/d BM ---
+    // A=1, BC=55, BD=56, BE=57, BF=58, BG=59, BH=60, BI=61, BJ=62, BK=63, BL=64, BM=65
+    sheetDB.getRange(rowIndex, 1).setValue(sekarang); // Update Timestamp di Kolom A
+    sheetDB.getRange(rowIndex, 55).setValue(obj.sekolahTujuan); // BC
+    sheetDB.getRange(rowIndex, 56).setValue("'" + obj.npsn);    // BD
+    sheetDB.getRange(rowIndex, 57).setValue(obj.alamat);        // BE
+    sheetDB.getRange(rowIndex, 58).setValue(obj.kelurahan);     // BF
+    sheetDB.getRange(rowIndex, 59).setValue(obj.kecamatan);     // BG
+    sheetDB.getRange(rowIndex, 60).setValue(obj.kota);          // BH
+    sheetDB.getRange(rowIndex, 61).setValue(obj.provinsi);      // BI
+    sheetDB.getRange(rowIndex, 62).setValue("Mutasi");          // BJ
+    sheetDB.getRange(rowIndex, 63).setValue(obj.tanggalMutasi); // BK
+    sheetDB.getRange(rowIndex, 64).setValue(fileUrl);           // BL
 
-    SpreadsheetApp.flush(); 
-    Utilities.sleep(1200); 
-    
-    var lastRow = sheetMutasi.getLastRow();
-    // Mengambil tanggal mutasi dari Kolom P (16) yang sudah diformat Indonesia di Sheet
-    var tanggalMutasiDariSheet = sheetMutasi.getRange(lastRow, 16).getDisplayValue();
+    SpreadsheetApp.flush();
+    Utilities.sleep(1000);
 
-    // --- 5. OLAH DOKUMEN SURAT ---
+    // Ambil tanggal mutasi yang sudah diformat Indonesia dari Kolom BK (63)
+    var tanggalIndoDariSheet = sheetDB.getRange(rowIndex, 63).getDisplayValue();
+
+    // --- 5. OLAH DOKUMEN ---
     var namaDocBaru = "SURAT_MUTASI_" + obj.nama.toUpperCase() + "_" + tglLabel;
     var copyFile = DriveApp.getFileById(TEMPLATE_ID).makeCopy(namaDocBaru, folder);
     var docUrl = copyFile.getUrl();
     
-    // Masukkan link surat ke Kolom R (18)
-    sheetMutasi.getRange(lastRow, 18).setValue(docUrl);
+    // Simpan link Doc ke Kolom BM (65)
+    sheetDB.getRange(rowIndex, 65).setValue(docUrl);
 
     var doc = DocumentApp.openById(copyFile.getId());
     var body = doc.getBody();
-  
-    // Penggantian Placeholder Data Utama
+    
+    // Replace placeholders
     body.replaceText("<<Nama>>", obj.nama);
     body.replaceText("<<NISN>>", obj.nisn);
     body.replaceText("<<jk>>", obj.jk);
@@ -86,17 +98,13 @@ function doPost(e) {
     body.replaceText("<<Kota>>", obj.kota);
     body.replaceText("<<Provinsi>>", obj.provinsi);
     body.replaceText("<<mutasi>>", "Mutasi");
-    
-    // Tanggal Tanda Tangan (Format Indonesia dari Kolom P)
-    body.replaceText("<<tanggal mutasi>>", tanggalMutasiDariSheet);
-
-    // Pengisian Footnote Otomatis
+    body.replaceText("<<tanggal mutasi>>", tanggalIndoDariSheet);
     body.replaceText("<<timestamp>>", teksTimestamp);
-      
+    
     doc.saveAndClose();
-  
-    // --- 6. KONVERSI KE PDF & KIRIM BALIK ---
-    Utilities.sleep(1500); 
+
+    // --- 6. GENERATE PDF ---
+    Utilities.sleep(1500);
     var pdfBlob = copyFile.getAs(MimeType.PDF);
     var pdfBase64 = Utilities.base64Encode(pdfBlob.getBytes());
     var namaFileFix = "SURAT_MUTASI_" + obj.nama.toUpperCase().replace(/\s+/g, '_') + ".pdf";
@@ -107,7 +115,7 @@ function doPost(e) {
       "pdfData": pdfBase64,
       "fileName": namaFileFix
     })).setMimeType(ContentService.MimeType.JSON);
-    
+
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({
       "status": "Error", 
