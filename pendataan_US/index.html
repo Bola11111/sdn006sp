@@ -14,11 +14,11 @@
   --primary-dark: #1e40af;
   --secondary: #64748b; 
   --success: #10b981; 
-  --bg: #f8fafc; 
+  --bg: #f1f5f9;         /* Warna dasar abu-abu */ 
   --card-bg: #ffffff;
   --text-main: #1e293b;
   --accent: #dbeafe;
-  --grid-color: #e2e8f0; /* Warna garis kotak */
+  --grid-color: #cbd5e1; /* Warna titik-titik agar terlihat jelas */
 }
 
 body { 
@@ -37,9 +37,7 @@ body {
   
   /* LOGIKA BACKGROUND KOTAK (GRID) */
   background-color: var(--bg);
-  background-image: 
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-image: radial-gradient(var(--grid-color) 1.5px, transparent 1.5px);
   background-size: 30px 30px; /* Ukuran kotak 30px */
 }
 
