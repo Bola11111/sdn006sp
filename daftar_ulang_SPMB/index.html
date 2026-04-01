@@ -30,14 +30,13 @@
         .hero-title, .hero-subtitle { font-size: clamp(1.5rem, 5vw, 2.5rem); line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
-<!-- Background Gradien Disamakan (Home & Form) -->
 <body class="p-0 m-0 min-h-screen bg-gradient-to-br from-blue-600 to-indigo-800 bg-fixed">
 
     <!-- OVERLAY LOADING DENGAN ANIMASI PUTAR TAILWIND -->
     <div id="initial-loading" class="fixed inset-0 bg-white z-[60] hidden flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full border-4 border-gray-200 border-t-blue-600 h-16 w-16 mb-4"></div>
-        <p class="text-gray-600 font-medium font-bold text-lg">Memproses Data...</p>
-        <p class="text-sm text-gray-400 mt-2">Mohon tunggu, jangan tutup halaman ini.</p>
+        <p class="text-gray-600 font-medium font-bold text-lg">Memproses Data Kilat...</p>
+        <p class="text-sm text-gray-400 mt-2">Mohon tunggu beberapa detik, jangan tutup halaman ini.</p>
     </div>
 
     <!-- MODAL PREVIEW -->
@@ -72,7 +71,7 @@
         </button>
     </div>
 
-    <!-- MAIN FORM -->
+    <!-- MAIN FORM (100% PRESERVED FROM V2) -->
     <div id="main-form" class="hidden max-w-4xl mx-auto p-4 md:p-8 page-transition mb-20">
         <div class="glass-card p-6 md:p-10 rounded-3xl shadow-2xl border border-white text-gray-800">
             
@@ -107,7 +106,6 @@
                     <div class="col-span-4 md:col-span-1"><label class="block text-sm font-bold text-gray-700 mb-2">RT<span class="required-star">*</span></label><input type="text" name="rt" maxlength="3" inputmode="numeric" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50" required></div>
                 </div>
 
-                <!-- PORSI 1/3 (DIBAGI 3 KOLOM) -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div><label class="block text-sm font-bold text-gray-700 mb-2">Kode POS<span class="required-star">*</span></label><input type="text" name="kodepos" maxlength="5" inputmode="numeric" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50" required placeholder="75xxx"></div>
                     <div><label class="block text-sm font-bold text-gray-700 mb-2">Kelurahan<span class="required-star">*</span></label><input type="text" name="kelurahan" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50 eyd-field" required placeholder="Kelurahan"></div>
@@ -167,7 +165,7 @@
                     <div><label class="block text-sm font-bold text-gray-700 mb-2">Hobi</label><input type="text" name="hobi" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50 eyd-field"></div>
                     <div><label class="block text-sm font-bold text-gray-700 mb-2">Cita Cita</label><input type="text" name="cita_cita" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50 eyd-field"></div>
                     <div><label class="block text-sm font-bold text-gray-700 mb-2">Jarak Rumah (km/m)</label><input type="text" name="jarak" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50 eyd-field"></div>
-                    <div><label class="block text-sm font-bold text-gray-700 mb-2">Waktu Tempuh (menit/jam)</label><input type="text" name="waktu" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50 eyd-field"></div>
+                    <div><label class="block text-sm font-bold text-gray-700 mb-2">Waktu Tempuh</label><input type="text" name="waktu" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50 eyd-field"></div>
                 </div>
 
                 <!-- SEKSI 6: SOSIAL & PRESTASI -->
@@ -179,7 +177,7 @@
                     </div>
                     <div class="flex gap-4 items-end">
                         <div class="flex-1"><label class="block text-sm font-bold text-gray-700 mb-2">Penerima PIP?</label><select name="pip_status" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50"><option>Tidak</option><option>Ya</option></select></div>
-                        <div class="flex-[2]"><label class="block text-sm font-bold text-gray-700 mb-2">Tahun Terakhir PIP (jika ada)</label><input type="text" name="thn_pip" maxlength="4" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50"></div>
+                        <div class="flex-[2]"><label class="block text-sm font-bold text-gray-700 mb-2">Tahun Terakhir PIP (jika ada)</label><input type="text" name="thn_pip" maxlength="4" inputmode="numeric" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50"></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-6">
                         <div class="md:col-span-1"><label class="block text-sm font-bold text-gray-700 mb-2">Prestasi</label><input type="text" name="prestasi" class="w-full p-3 rounded-xl border-gray-100 bg-gray-50 eyd-field"></div>
@@ -202,7 +200,6 @@
 
                 <div class="mt-12 pb-20">
                     <button type="submit" id="btnSubmit" class="w-full bg-green-600 hover:bg-green-700 text-white py-5 rounded-3xl font-extrabold text-xl shadow-2xl flex items-center justify-center gap-4 transition-all transform active:scale-95 disabled:bg-gray-400"><i class="fas fa-paper-plane"></i> KIRIM DATA PENDAFTARAN</button>
-                    <!-- Warna tombol Batal diubah agar hitam saat standby, dan merah saat disorot kursor -->
                     <button type="button" onclick="exitForm()" class="w-full mt-4 text-gray-700 font-bold text-sm uppercase tracking-widest hover:text-red-600 transition">Batalkan & Keluar</button>
                 </div>
             </form>
@@ -213,14 +210,13 @@
     // ==========================================
     // MASUKKAN URL WEBAPP GAS ANDA DI BAWAH INI
     // ==========================================
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxe5yFMwLKq8IdApIU04muXWdyBDjz_J6I7isT6DdPeaohLQ92AaV08IVcf41mIfhEK0A/exec"; //url GAS tempel disini
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxe5yFMwLKq8IdApIU04muXWdyBDjz_J6I7isT6DdPeaohLQ92AaV08IVcf41mIfhEK0A/exec"; 
     
     let selectedFiles = [];
     let submittedPayload = {};
     let dropdownsLoaded = false;
 
     window.onload = () => {
-        // Cek apakah berjalan di dalam GAS atau di luar HTML
         if (typeof google !== 'undefined') {
             google.script.run
                 .withSuccessHandler(populateDropdowns)
@@ -230,7 +226,6 @@
                 })
                 .getDropdownData();
         } else {
-            // Jika berjalan di luar GAS (CORS Fetch)
             if (GAS_URL === "TARUH_URL_WEBAPP_ANDA_DISINI") {
                 console.warn("Harap isi GAS_URL di script HTML untuk akses dari luar.");
                 dropdownsLoaded = true;
@@ -299,26 +294,21 @@
         window.scrollTo(0,0); 
     }
     
-    // Perbaikan Penting: Mereset seluruh kondisi form ke awal termasuk tombol
     function exitForm() { 
         document.getElementById('main-form').classList.add('hidden'); 
         document.getElementById('home-screen').classList.remove('hidden'); 
         
-        // Bersihkan input teks dan file
         document.getElementById('ppdbForm').reset();
         selectedFiles = [];
         renderFileList();
         
-        // Kembalikan kondisi tombol submit ke normal
         const btnSubmit = document.getElementById('btnSubmit');
         if(btnSubmit) {
             btnSubmit.disabled = false;
             btnSubmit.innerHTML = `<i class="fas fa-paper-plane"></i> KIRIM DATA PENDAFTARAN`;
         }
         
-        // Bersihkan area merah pada input jika sebelumnya error
         document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
-        
         window.scrollTo(0,0);
     }
 
@@ -378,7 +368,7 @@
 
         const btn = document.getElementById('btnSubmit');
         btn.disabled = true;
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> PROSES PENGIRIMAN...`;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> MEMPROSES...`;
         document.getElementById('initial-loading').classList.remove('hidden');
 
         const formData = new FormData(e.target);
@@ -397,10 +387,15 @@
             if (typeof google !== 'undefined') {
                 google.script.run
                     .withSuccessHandler(res => {
-                        document.getElementById('initial-loading').classList.add('hidden');
                         const r = JSON.parse(res);
-                        if (r.result === 'success') { showSuccess(r.id); } 
-                        else { throw new Error(r.error); }
+                        if (r.result === 'success') { 
+                            document.getElementById('initial-loading').classList.add('hidden');
+                            // PEMICU ROBOT LATAR (Async)
+                            google.script.run.runBackgroundTask(r.id);
+                            showSuccess(r.id); 
+                        } else { 
+                            throw new Error(r.error); 
+                        }
                     })
                     .withFailureHandler(err => { 
                         document.getElementById('initial-loading').classList.add('hidden');
@@ -416,13 +411,15 @@
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
                     body: JSON.stringify(payload),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // text/plain menghindari block CORS
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
                 });
                 
                 const r = await response.json();
-                document.getElementById('initial-loading').classList.add('hidden');
                 
                 if (r.result === 'success') { 
+                    document.getElementById('initial-loading').classList.add('hidden');
+                    // PEMICU ROBOT LATAR EKSTERNAL (Async tanpa menunggu balasan)
+                    fetch(GAS_URL + "?action=runBackground&id=" + r.id).catch(e => console.log("Latar berjalan"));
                     showSuccess(r.id); 
                 } else { 
                     throw new Error(r.error); 
@@ -431,13 +428,12 @@
         } catch (error) {
             document.getElementById('initial-loading').classList.add('hidden');
             Swal.fire('Gagal', error.message, 'error');
-            const btn = document.getElementById('btnSubmit');
             btn.disabled = false;
             btn.innerHTML = `<i class="fas fa-paper-plane"></i> KIRIM DATA PENDAFTARAN`;
         }
     }
 
-    // Perbaikan Flow Alert Cetak
+    // Perbaikan Flow Alert Cetak & Render HTML Instan
     function showSuccess(id) {
         Swal.fire({
             title: 'Berhasil Terkirim!',
@@ -452,28 +448,33 @@
         }).then((result) => {
             if (result.isConfirmed) { 
                 // Jika klik Lihat Bukti
-                generateReceipt(id, false); // Parameter false agar form tidak langsung tertutup
+                generateInstanReceipt(id, false); 
                 
-                // Tampilkan alert kedua yang menunggu instruksi pengguna
                 Swal.fire({
                     title: 'Tab Cetak Terbuka',
-                    text: 'Bukti pendaftaran telah dibuka di tab/jendela baru. Silakan klik "Selesai" jika Anda sudah mencetak/menyimpan PDF untuk kembali ke Beranda.',
+                    text: 'Bukti pendaftaran telah dibuka di tab baru. Silakan klik "Selesai" jika sudah dicetak/disimpan.',
                     icon: 'info',
                     confirmButtonText: 'Selesai',
                     confirmButtonColor: '#10b981',
                     allowOutsideClick: false
                 }).then(() => {
-                    exitForm(); // Reset formulir bersih
+                    exitForm(); 
                 });
             } else { 
-                // Jika langsung klik Selesai (OK)
-                exitForm(); // Reset formulir bersih
+                exitForm(); 
             }
         });
     }
 
-    function generateReceipt(regId, autoExit = true) {
+    // Render 100% dari HTML Client-Side (Nol Detik)
+    function generateInstanReceipt(regId, autoExit = true) {
         const printWindow = window.open('', '_blank');
+        
+        const now = new Date();
+        const optionsDate = { day: '2-digit', month: 'long', year: 'numeric' };
+        const dateStr = now.toLocaleDateString('id-ID', optionsDate);
+        const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
         const receiptHTML = `
             <!DOCTYPE html>
             <html lang="id">
@@ -489,7 +490,7 @@
                     .row { display: flex; border-bottom: 1px solid #eee; padding: 12px 0; }
                     .label { width: 40%; font-weight: bold; color: #555; }
                     .value { width: 60%; font-weight: 600; text-transform: uppercase; }
-                    .footer { margin-top: 40px; font-size: 12px; color: #777; font-style: italic; border-top: 1px dashed #ccc; pt: 10px; }
+                    .footer { margin-top: 40px; font-size: 12px; color: #777; font-style: italic; border-top: 1px dashed #ccc; padding-top: 10px; text-align:center; line-height: 1.6;}
                     @media print { .no-print { display: none; } }
                 </style>
             </head>
@@ -503,17 +504,20 @@
                     NOMOR REGISTRASI: <span style="color:#2563eb">${regId}</span>
                 </div>
                 <div class="row"><div class="label">Nama Lengkap</div><div class="value">${submittedPayload.nama}</div></div>
-                <div class="row"><div class="label">NISN / NIK</div><div class="value">${submittedPayload.nisn} / ${submittedPayload.nik}</div></div>
+                <div class="row"><div class="label">NIK Siswa</div><div class="value">${submittedPayload.nik}</div></div>
+                <div class="row"><div class="label">NISN</div><div class="value">${submittedPayload.nisn}</div></div>
                 <div class="row"><div class="label">Rombongan Belajar</div><div class="value">${submittedPayload.rombel}</div></div>
+                <div class="row"><div class="label">Nomor HP/WA</div><div class="value">${submittedPayload.hp}</div></div>
                 <div class="row"><div class="label">Alamat</div><div class="value" style="text-transform:none;">${submittedPayload.alamat}, RT.${submittedPayload.rt}, Kel.${submittedPayload.kelurahan}, Kec.${submittedPayload.kecamatan}</div></div>
                 <div class="row"><div class="label">Nama Ayah</div><div class="value">${submittedPayload.nama_ayah}</div></div>
                 <div class="row"><div class="label">Nama Ibu</div><div class="value">${submittedPayload.nama_ibu}</div></div>
                 
                 <div class="footer">
-                    * Simpan bukti pendaftaran ini. Bawa dokumen asli ke sekolah untuk proses verifikasi lanjutan sesuai jadwal yang ditentukan.
+                    * Simpan bukti pendaftaran ini. Proses penentuan rombel akan diinfokan lebih lanjut atau bisa lihat di papan informasi sekolah, pastikan nomor HP sama untuk Whatsapp agar menerima informasi.<br>
+                    <span style="display:block; margin-top:10px;">Dicetak pada: ${dateStr} - ${timeStr} WITA</span>
                 </div>
                 <div class="no-print" style="margin-top: 40px; text-align: center;">
-                    <button onclick="window.print()" style="padding: 12px 25px; cursor: pointer; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold;">CETAK / SIMPAN PDF</button>
+                    <button onclick="window.print()" style="padding: 12px 25px; cursor: pointer; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold;">CETAK / SIMPAN PDF (Ctrl+P)</button>
                 </div>
             </body>
             </html>
