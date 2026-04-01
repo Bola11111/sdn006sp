@@ -26,9 +26,9 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
         
-        /* Modal Instant Fix: Menghilangkan Transition agar modal muncul/hilang seketika */
-        #formModal { transition: none !important; }
-        #modalContent { transition: none !important; transform: none !important; }
+        /* Modal Instant Fix */
+        #formModal, #viewModal { transition: none !important; }
+        #modalContent, #viewModalContent { transition: none !important; transform: none !important; }
     </style>
 </head>
 <body class="text-slate-800 overflow-hidden">
@@ -113,15 +113,17 @@
                     <i class="fas fa-users w-6 text-slate-400 group-hover:text-blue-400 transition"></i> <span class="font-medium">Data Siswa</span>
                 </button>
                 
-                <div class="text-xs uppercase text-slate-500 font-bold px-4 pt-4 pb-2 tracking-wider">Mutasi</div>
+                <div class="text-xs uppercase text-slate-500 font-bold px-4 pt-4 pb-2 tracking-wider">Mutasi & Kelulusan</div>
                 <button onclick="changeView('mutasiMasuk')" class="nav-link w-full flex items-center px-4 py-3 rounded-xl transition hover:bg-slate-800 hover:text-white group" data-view="mutasiMasuk">
                     <i class="fas fa-sign-in-alt w-6 text-slate-400 group-hover:text-amber-400 transition"></i> <span class="font-medium">Mutasi Masuk</span>
                 </button>
                 <button onclick="changeView('mutasiKeluar')" class="nav-link w-full flex items-center px-4 py-3 rounded-xl transition hover:bg-slate-800 hover:text-white group" data-view="mutasiKeluar">
                     <i class="fas fa-sign-out-alt w-6 text-slate-400 group-hover:text-rose-400 transition"></i> <span class="font-medium">Mutasi Keluar</span>
                 </button>
+                <button onclick="changeView('siswaLulus')" class="nav-link w-full flex items-center px-4 py-3 rounded-xl transition hover:bg-slate-800 hover:text-white group" data-view="siswaLulus">
+                    <i class="fas fa-user-graduate w-6 text-slate-400 group-hover:text-fuchsia-400 transition"></i> <span class="font-medium">Siswa Lulus</span>
+                </button>
                 
-                <!-- PERBAIKAN: Menu ini benar-benar disembunyikan kuat untuk User -->
                 <div id="adminMenu" class="hidden">
                     <div class="text-xs uppercase text-slate-500 font-bold px-4 pt-4 pb-2 tracking-wider">Sistem</div>
                     <button onclick="changeView('pengaturan')" class="nav-link w-full flex items-center px-4 py-3 rounded-xl transition hover:bg-slate-800 hover:text-white group" data-view="pengaturan">
@@ -143,6 +145,7 @@
                     <h2 id="currentViewTitle" class="text-xl font-bold text-slate-800 tracking-tight">Dashboard</h2>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <span id="syncStatus" class="text-xs text-emerald-500 font-medium hidden animate-pulse bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 shadow-sm"><i class="fas fa-sync mr-1"></i> Sinkron Latar Belakang...</span>
                     <div id="currentTime" class="hidden md:flex items-center text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg font-medium">
                         <i class="far fa-clock mr-2 text-blue-500"></i> <span id="clockText">00:00:00</span>
                     </div>
@@ -159,40 +162,28 @@
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
                             <div class="absolute right-0 top-0 h-full w-2 bg-blue-500"></div>
                             <div class="flex justify-between items-center relative z-10">
-                                <div>
-                                    <p class="text-slate-500 text-sm font-medium mb-1">Total Siswa Aktif</p>
-                                    <h3 class="text-3xl font-bold text-slate-800" id="stat_siswa">0</h3>
-                                </div>
+                                <div><p class="text-slate-500 text-sm font-medium mb-1">Total Siswa Aktif</p><h3 class="text-3xl font-bold text-slate-800" id="stat_siswa">0</h3></div>
                                 <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"><i class="fas fa-users"></i></div>
                             </div>
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
                             <div class="absolute right-0 top-0 h-full w-2 bg-emerald-500"></div>
                             <div class="flex justify-between items-center relative z-10">
-                                <div>
-                                    <p class="text-slate-500 text-sm font-medium mb-1">Total Pegawai</p>
-                                    <h3 class="text-3xl font-bold text-slate-800" id="stat_pegawai">0</h3>
-                                </div>
+                                <div><p class="text-slate-500 text-sm font-medium mb-1">Total Pegawai</p><h3 class="text-3xl font-bold text-slate-800" id="stat_pegawai">0</h3></div>
                                 <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"><i class="fas fa-user-tie"></i></div>
                             </div>
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
                             <div class="absolute right-0 top-0 h-full w-2 bg-amber-500"></div>
                             <div class="flex justify-between items-center relative z-10">
-                                <div>
-                                    <p class="text-slate-500 text-sm font-medium mb-1">Mutasi Masuk</p>
-                                    <h3 class="text-3xl font-bold text-slate-800" id="stat_mm">0</h3>
-                                </div>
+                                <div><p class="text-slate-500 text-sm font-medium mb-1">Mutasi Masuk</p><h3 class="text-3xl font-bold text-slate-800" id="stat_mm">0</h3></div>
                                 <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"><i class="fas fa-sign-in-alt"></i></div>
                             </div>
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
                             <div class="absolute right-0 top-0 h-full w-2 bg-rose-500"></div>
                             <div class="flex justify-between items-center relative z-10">
-                                <div>
-                                    <p class="text-slate-500 text-sm font-medium mb-1">Mutasi Keluar</p>
-                                    <h3 class="text-3xl font-bold text-slate-800" id="stat_mk">0</h3>
-                                </div>
+                                <div><p class="text-slate-500 text-sm font-medium mb-1">Mutasi Keluar</p><h3 class="text-3xl font-bold text-slate-800" id="stat_mk">0</h3></div>
                                 <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"><i class="fas fa-sign-out-alt"></i></div>
                             </div>
                         </div>
@@ -283,17 +274,21 @@
                 </section>
 
                 <section id="view_sekolah" class="content-view hidden">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 w-full max-w-7xl mx-auto mt-6">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 pb-6 mb-6 gap-4">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 w-full mx-auto mt-2 mb-10 relative">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 pb-4 mb-6 sticky top-0 bg-white z-10 pt-2">
                             <div>
-                                <h2 class="text-3xl font-bold text-slate-800" id="prof_nama_sekolah">Memuat...</h2>
-                                <p class="text-slate-500 mt-2"><i class="fas fa-map-marker-alt text-blue-500 mr-2"></i> <span id="prof_alamat">Alamat Lengkap</span></p>
+                                <h2 class="text-2xl font-bold text-slate-800 flex items-center"><i class="fas fa-building text-blue-500 mr-3"></i> Formulir Profil Sekolah</h2>
+                                <p class="text-slate-500 text-sm mt-1">Lengkapi data sekolah langsung pada lembar kerja di bawah ini.</p>
                             </div>
-                            <button onclick="triggerEditSekolah()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md shadow-blue-500/30 flex items-center transition focus:outline-none shrink-0">
-                                <i class="fas fa-edit mr-2"></i> Edit Profil
+                            <button id="btnSimpanSekolahInline" onclick="submitInlineSekolah()" class="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/30 flex items-center transition focus:outline-none shrink-0 transform hover:-translate-y-0.5">
+                                <i class="fas fa-save mr-2 text-lg"></i> Simpan Data Sekolah
                             </button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="sekolahFullInfo"></div>
+                        
+                        <!-- Area Formulir Inline -->
+                        <div id="sekolahInlineForm" class="space-y-8 px-2 md:px-8">
+                            <!-- Diisi oleh JS -->
+                        </div>
                     </div>
                 </section>
 
@@ -301,12 +296,16 @@
                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                         <div class="flex flex-wrap items-center gap-2" id="toolbarButtons"></div>
                         <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                            <!-- Filter Rombel Asli -->
                             <select id="filterRombel" onchange="applyFilters()" class="hidden px-4 py-2 bg-slate-50 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition font-medium">
                                 <option value="">Semua Rombel</option>
                             </select>
+                            <!-- Filter Tahun Lulus -->
+                            <input type="number" id="filterTahunLulus" onkeyup="applyFilters()" placeholder="Tahun Lulus (Misal: 2024)" class="hidden w-40 px-4 py-2 bg-slate-50 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition font-medium">
+                            
                             <div class="relative w-full md:w-64">
                                 <i class="fas fa-search absolute left-3 top-2.5 text-slate-400"></i>
-                                <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Pencarian cepat..." class="w-full pl-10 pr-4 py-2 bg-slate-50 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none text-sm transition">
+                                <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Pencarian nama..." class="w-full pl-10 pr-4 py-2 bg-slate-50 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none text-sm transition">
                             </div>
                         </div>
                     </div>
@@ -342,7 +341,7 @@
         </main>
     </div>
 
-    <!-- Modal Form -->
+    <!-- Modal Form Standar (Popup dg Step) -->
     <div id="formModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden p-4">
         <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" id="modalContent">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
@@ -360,10 +359,25 @@
         </div>
     </div>
 
+    <!-- Modal Baru untuk Lihat Data Vertikal (Read-Only) Khusus Siswa Lulus -->
+    <div id="viewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" id="viewModalContent">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-fuchsia-50 rounded-t-2xl">
+                <h3 id="viewModalTitle" class="text-xl font-bold text-slate-800 flex items-center"><i class="fas fa-file-alt text-fuchsia-600 mr-2"></i> Detail Data Siswa Lulus</h3>
+                <button onclick="closeViewModal()" class="w-8 h-8 rounded-full hover:bg-fuchsia-200 text-slate-500 flex items-center justify-center transition focus:outline-none"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <!-- Tidak ada tab, langsung form list memanjang ke bawah -->
+            <div class="p-6 overflow-y-auto flex-1 bg-white space-y-6" id="viewInputs"></div>
+            <div class="px-6 py-4 border-t border-slate-100 flex justify-end space-x-3 bg-slate-50 rounded-b-2xl">
+                <button onclick="closeViewModal()" class="px-6 py-2.5 bg-slate-200 text-slate-800 rounded-xl hover:bg-slate-300 transition font-bold focus:outline-none">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6oKjdGZYZwuhMMz42xseASWXgf8WfA4XUpvK6xxqTjXpBNfzFQzSZO-wwygU64VRGzg/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLNy42NSiLxS_h5xNIfe_wbh9GEzfo6v5klmMivVdFiV7FpTFXrQO7Mqvzuanrb9mp/exec"; 
         let currentUser = null;
         let currentView = 'dashboard';
         let rawData = [];
@@ -397,7 +411,20 @@
                 groups: {
                     "Identitas": ['rombel', 'nama', 'jenis_kelamin', 'nisn', 'nis', 'nik_siswa', 'nomor_kk', 'tempat_lahir', 'tanggal_lahir', 'agama', 'berkebutuhan_khusus_siswa'],
                     "Lokasi & Kontak": ['alamat_siswa', 'rt', 'kelurahan', 'kecamatan', 'kode_pos', 'tinggal_bersama', 'mode_transportasi', 'jarak_rumah_ke_sekolah', 'waktu_tempuh', 'nomor_hp'],
-                    "Orang Tua": ['nama_ayah', 'nik_ayah', 'tanggal_lahir_ayah', 'pendidikan_ayah', 'pekerjaan_ayah', 'penghasilan_ayah', 'berkebutuhan_khusus_ayah', 'nama_ibu', 'nik_ibu', 'tanggal_lahir_ibu', 'pendidikan_ibu', 'pekerjaan_ibu', 'penghasilan_ibu', 'berkebutuhan_khusus_ibu'],
+                    "Data Ayah": ['nama_ayah', 'nik_ayah', 'tanggal_lahir_ayah', 'pendidikan_ayah', 'pekerjaan_ayah', 'penghasilan_ayah', 'berkebutuhan_khusus_ayah'],
+                    "Data Ibu": ['nama_ibu', 'nik_ibu', 'tanggal_lahir_ibu', 'pendidikan_ibu', 'pekerjaan_ibu', 'penghasilan_ibu', 'berkebutuhan_khusus_ibu'],
+                    "Wali": ['nama_wali', 'nik_wali', 'tanggal_lahir_wali', 'pendidikan_wali', 'pekerjaan_wali', 'penghasilan_wali'],
+                    "Data Periodik": ['lingkar_kepala', 'tinggi_badan', 'berat_badan', 'anak_ke', 'jumlah_saudara', 'hobi', 'cita_cita', 'prestasi', 'juara', 'tingkat_prestasi'],
+                    "Kesejahteraan": ['penerima_pkh', 'nomor_pkh', 'penerima_pip', 'tahun_terakhir_menerima_pip']
+                }
+            },
+            SiswaLulus: { 
+                groups: {
+                    "Kelulusan": ['tanggal_lulus'],
+                    "Identitas": ['rombel', 'nama', 'jenis_kelamin', 'nisn', 'nis', 'nik_siswa', 'nomor_kk', 'tempat_lahir', 'tanggal_lahir', 'agama', 'berkebutuhan_khusus_siswa'],
+                    "Lokasi & Kontak": ['alamat_siswa', 'rt', 'kelurahan', 'kecamatan', 'kode_pos', 'tinggal_bersama', 'mode_transportasi', 'jarak_rumah_ke_sekolah', 'waktu_tempuh', 'nomor_hp'],
+                    "Data Ayah": ['nama_ayah', 'nik_ayah', 'tanggal_lahir_ayah', 'pendidikan_ayah', 'pekerjaan_ayah', 'penghasilan_ayah', 'berkebutuhan_khusus_ayah'],
+                    "Data Ibu": ['nama_ibu', 'nik_ibu', 'tanggal_lahir_ibu', 'pendidikan_ibu', 'pekerjaan_ibu', 'penghasilan_ibu', 'berkebutuhan_khusus_ibu'],
                     "Wali": ['nama_wali', 'nik_wali', 'tanggal_lahir_wali', 'pendidikan_wali', 'pekerjaan_wali', 'penghasilan_wali'],
                     "Data Periodik": ['lingkar_kepala', 'tinggi_badan', 'berat_badan', 'anak_ke', 'jumlah_saudara', 'hobi', 'cita_cita', 'prestasi', 'juara', 'tingkat_prestasi'],
                     "Kesejahteraan": ['penerima_pkh', 'nomor_pkh', 'penerima_pip', 'tahun_terakhir_menerima_pip']
@@ -418,6 +445,7 @@
         const tableCols = {
             pegawai: ['nama', 'nik', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'nip', 'jabatan'],
             siswa: ['rombel', 'nama', 'jenis_kelamin', 'nisn', 'tempat_lahir', 'tanggal_lahir'],
+            siswaLulus: ['rombel', 'nama', 'jenis_kelamin', 'nisn', 'tempat_lahir', 'tanggal_lahir', 'tanggal_lulus'], 
             mutasiMasuk: ['rombel', 'nama', 'nisn', 'nama_sekolah', 'tanggal_pindah'],
             mutasiKeluar: ['rombel', 'nama', 'nisn', 'nama_sekolah', 'tanggal_pindah'],
             pengaturan: ['username', 'nama', 'role', 'password']
@@ -426,7 +454,7 @@
         const fieldSelectMap = {
             'jenis_kelamin': 'kd_kelamin', 'agama': 'kd_agama', 'status_kawin': 'kd_kawin',
             'pekerjaan_pasangan': 'kd_pekerjaan', 'pekerjaan_ayah': 'kd_pekerjaan', 'pekerjaan_ibu': 'kd_pekerjaan', 'pekerjaan_wali': 'kd_pekerjaan',
-            'pangkat': 'kd_pangkat', 'golongan': 'kd_golongan', 'jabatan': 'kd_jabatan', 'jenis': 'kd_jenis', 'status': 'kd_status',
+            'golongan': 'kd_golongan', 'jabatan': 'kd_jabatan', 'jenis': 'kd_jenis', 'status': 'kd_status',
             'jenjang': 'kd_pendidikan', 'pendidikan_ayah': 'kd_pendidikan', 'pendidikan_ibu': 'kd_pendidikan', 'pendidikan_wali': 'kd_pendidikan',
             'rombel': 'kd_rombel', 'berkebutuhan_khusus_siswa': 'kd_berkebutuhan', 'berkebutuhan_khusus_ayah': 'kd_berkebutuhan', 'berkebutuhan_khusus_ibu': 'kd_berkebutuhan',
             'tinggal_bersama': 'kd_tinggal', 'mode_transportasi': 'kd_transportasi', 'penerima_pkh': ['Ya', 'Tidak'], 'penerima_pip': ['Ya', 'Tidak']
@@ -436,6 +464,9 @@
             const savedUser = localStorage.getItem('sis_user');
             if(savedUser) { currentUser = JSON.parse(savedUser); showApp(); }
             updateClock(); setInterval(updateClock, 1000); renderCalendar();
+            
+            // BACKGROUND SYNC SETIAP 3 MENIT
+            setInterval(backgroundSync, 180000);
         };
 
         function togglePassword() {
@@ -472,7 +503,6 @@
             document.getElementById('userRole').innerText = currentUser.role;
             document.getElementById('userInitial').innerText = currentUser.nama[0].toUpperCase();
             
-            // PERBAIKAN: Menampilkan Pengaturan Akun murni HANYA JIKA role === admin
             if(currentUser.role === 'admin') {
                 document.getElementById('adminMenu').classList.remove('hidden');
             } else {
@@ -480,7 +510,7 @@
             }
             
             showLoader(true, "Mengunduh Database Sekolah...");
-            await fetchReferenceData(); // Tunggu data sampai tuntas sebelum merender UI
+            await fetchReferenceData(); 
             changeView('dashboard');
             showLoader(false);
         }
@@ -500,7 +530,6 @@
         }
 
         async function apiCall(action, data = {}) {
-            // PERBAIKAN: Menyisipkan informasi pengguna ke payload (untuk fitur Log Aktivitas di backend)
             if (currentUser && !data.user) data.user = currentUser.nama; 
             
             return new Promise((resolve, reject) => {
@@ -525,6 +554,39 @@
             }
         }
 
+        // --- START OPTIMALISASI PARTIAL SYNC & BACKGROUND SYNC --- //
+        function refreshActiveSheetData() {
+            if(!activeSheet) return;
+            // Dijalankan asinkron tanpa membekukan UI
+            apiCall('getData', { sheetName: activeSheet }).then(res => {
+                if(res.success) {
+                    allSheetsData[activeSheet] = res.data;
+                    rawData = allSheetsData[activeSheet] || [];
+                    applyFilters(); // Re-render tabel seketika di latar
+                }
+            }).catch(e => console.error("Partial Sync Error:", e));
+        }
+
+        async function backgroundSync() {
+            if(!currentUser) return;
+            const syncEl = document.getElementById('syncStatus');
+            syncEl.classList.remove('hidden');
+            try {
+                const res = await apiCall('getAllData');
+                if(res.success) {
+                    allSheetsData = res.data;
+                    if(currentView !== 'dashboard' && currentView !== 'sekolah') {
+                        rawData = allSheetsData[activeSheet] || [];
+                        applyFilters();
+                    } else if(currentView === 'dashboard') {
+                        renderDashboard();
+                    }
+                }
+            } catch(e) {}
+            syncEl.classList.add('hidden');
+        }
+        // --- END OPTIMALISASI PARTIAL SYNC --- //
+
         async function changeView(view) {
             currentView = view;
             document.querySelectorAll('.content-view').forEach(v => v.classList.add('hidden'));
@@ -543,6 +605,7 @@
                 sekolah: 'Profil Sekolah',
                 pegawai: 'Data Pegawai',
                 siswa: 'Data Siswa',
+                siswaLulus: 'Data Siswa Lulus',
                 mutasiMasuk: 'Mutasi Masuk',
                 mutasiKeluar: 'Mutasi Keluar',
                 pengaturan: 'Pengaturan Akun'
@@ -555,7 +618,7 @@
             } else if (view === 'sekolah') {
                 document.getElementById('view_sekolah').classList.remove('hidden');
                 activeSheet = 'Sekolah';
-                loadProfilSekolah();
+                renderInlineFormSekolah(); 
             } else {
                 document.getElementById('view_table').classList.remove('hidden');
                 setupToolbar(view); 
@@ -573,7 +636,7 @@
             await fetchReferenceData();
             
             if (currentView === 'dashboard') renderDashboard();
-            else if (currentView === 'sekolah') loadProfilSekolah();
+            else if (currentView === 'sekolah') renderInlineFormSekolah();
             else loadTableData(currentView, true);
             
             showLoader(false);
@@ -607,7 +670,7 @@
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100"><div class="text-xs text-slate-500 mb-1">Nomor Telepon</div><div class="font-bold text-slate-800">${sekolah.nomor_telepon || '-'}</div></div>
             `;
             
-            // ================= REKAP SISWA =================
+            // Rekap...
             const rekapSiswa = {}; 
             siswa.forEach(s => { 
                 const r = s.rombel || 'Tanpa Rombel'; 
@@ -618,7 +681,6 @@
             });
             renderRekapTable('tblRekapSiswa', rekapSiswa, ['L', 'P'], 'chartSiswa', true); 
             
-            // ================= REKAP PEGAWAI =================
             const listJabatan = [...new Set(tabelData.map(t => t.kd_jabatan).filter(Boolean))];
             const rekapPeg = {}; 
             listJabatan.forEach(j => rekapPeg[j] = { L:0, P:0 });
@@ -632,7 +694,6 @@
             });
             renderRekapTable('tblRekapPegawai', rekapPeg, ['L', 'P'], 'chartPegawai', false);
 
-            // ================= REKAP AGAMA =================
             const listAgama = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Budha', 'Khonghucu', 'Kepercayaan kpd Tuhan YME', 'Lainnya']; 
 
             let thAgama = `<tr><th class="py-2 px-3">No</th><th class="py-2 px-3">Rombel</th>`;
@@ -673,7 +734,6 @@
             tFootA += `<td class="py-2 px-3 text-center text-blue-700">${totalAgmAll}</td></tr>`;
             document.getElementById('tblRekapAgama').innerHTML = htmlAgama + tFootA;
 
-            // GRAFIK PIE AGAMA
             const ctxAgama = document.getElementById('chartAgama').getContext('2d');
             if(charts['chartAgama']) charts['chartAgama'].destroy();
             charts['chartAgama'] = new Chart(ctxAgama, {
@@ -685,14 +745,9 @@
                         backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#64748b']
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
             });
 
-            // ================= REKAP SOSIAL =================
             const rekapSosial = {};
             siswa.forEach(s => {
                 const r = s.rombel || 'Tanpa Rombel';
@@ -748,34 +803,107 @@
 
         function updateClock() { document.getElementById('clockText').innerText = new Date().toLocaleTimeString('id-ID'); }
 
-        function loadProfilSekolah() {
+        function renderInlineFormSekolah() {
             const data = allSheetsData['Sekolah']?.[0] || {};
-            document.getElementById('prof_nama_sekolah').innerText = data.nama_sekolah || 'Nama Sekolah Belum Diisi';
-            document.getElementById('prof_alamat').innerText = data.alamat_lengkap || 'Alamat tidak tersedia';
-            let html = ''; const g = formConfig['Sekolah'].groups;
+            const id = data.id || '';
+            const g = formConfig['Sekolah'].groups;
+            
+            let html = `<input type="hidden" id="inline_field_id" value="${id}">`;
+            
             for(let gn in g) {
-                html += `<div><h4 class="text-sm font-bold uppercase text-slate-400 mb-4 tracking-wider border-b border-slate-200 pb-2">${gn}</h4><ul class="space-y-3">`;
+                html += `<div class="bg-slate-50/50 rounded-xl p-6 border border-slate-200 shadow-sm relative">`;
+                html += `<h3 class="text-sm font-bold uppercase text-slate-500 mb-6 tracking-wider border-b border-slate-200 pb-3 flex items-center"><span class="w-2 h-6 bg-blue-500 rounded-full mr-3"></span> ${gn}</h3>`;
+                html += `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+                
                 g[gn].forEach(k => { 
-                    if(k !== 'nama_sekolah' && k !== 'alamat_lengkap') {
-                        html += `<li class="flex justify-between border-b border-slate-50 pb-2"><span class="text-slate-500 text-sm">${k.replace(/_/g,' ').toUpperCase()}</span> <span class="font-semibold text-slate-800 text-right w-1/2 text-sm">${data[k]||'-'}</span></li>`; 
+                    let label = k.replace(/_/g,' ').toUpperCase();
+                    let v = data[k] || '';
+                    if (typeof v === 'string' && v.startsWith("'")) v = v.substring(1);
+                    
+                    let input = '';
+                    let type = (k.includes('tanggal') || k.includes('tgl')) ? 'date' : 'text';
+                    
+                    let map = fieldSelectMap[k];
+                    if(map) {
+                        let opt = '<option value="">-- Pilih --</option>';
+                        if(Array.isArray(map)) map.forEach(o => opt += `<option value="${o}" ${v===o?'selected':''}>${o}</option>`);
+                        else {
+                            let list = [...new Set((allSheetsData['Tabel']||[]).map(t => t[map]).filter(Boolean))];
+                            list.forEach(o => opt += `<option value="${o}" ${v===o?'selected':''}>${o}</option>`);
+                        }
+                        input = `<select id="inline_field_${k}" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition text-sm text-slate-800 shadow-sm">${opt}</select>`;
+                    } else {
+                        input = `<input type="${type}" id="inline_field_${k}" value="${v}" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition text-sm text-slate-800 shadow-sm">`;
                     }
+
+                    let colSpan = (k === 'alamat_lengkap' || k === 'nama_sekolah') ? 'md:col-span-2 lg:col-span-3' : '';
+
+                    html += `
+                        <div class="${colSpan}">
+                            <label class="block text-xs font-bold text-slate-600 mb-2 ml-1">${label}</label>
+                            ${input}
+                        </div>
+                    `; 
                 });
-                html += `</ul></div>`;
+                
+                html += `</div></div>`; 
             }
-            document.getElementById('sekolahFullInfo').innerHTML = html;
+            
+            document.getElementById('sekolahInlineForm').innerHTML = html;
         }
 
-        function triggerEditSekolah() { openFormModal(allSheetsData['Sekolah']?.[0]?.id, allSheetsData['Sekolah']?.[0], 'Sekolah'); }
+        async function submitInlineSekolah() {
+            const fd = {}; 
+            const idField = document.getElementById('inline_field_id');
+            if(idField && idField.value) fd['id'] = idField.value;
+
+            document.querySelectorAll('#sekolahInlineForm input, #sekolahInlineForm select').forEach(i => {
+                if(i.id !== 'inline_field_id') {
+                    fd[i.id.replace('inline_field_','')] = i.value;
+                }
+            });
+            
+            const btn = document.getElementById('btnSimpanSekolahInline');
+            let oldText = btn.innerHTML; 
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...`; 
+            btn.disabled = true;
+
+            showLoader(true, "Menyimpan Data Sekolah..."); 
+            const res = await apiCall('saveData', { sheetName: 'Sekolah', formData: fd }); 
+            
+            showLoader(false); // MEMATIKAN LOADER INSTAN SEBELUM ALERT
+            
+            if(res.success) { 
+                Swal.fire({title:'Berhasil!', text: res.message || 'Profil Sekolah telah diperbarui.', icon:'success', timer: 1500, showConfirmButton: false}); 
+                
+                // Sync di Latar Tanpa Membekukan UI
+                apiCall('getData', { sheetName: 'Sekolah' }).then(getRes => {
+                    if(getRes.success) {
+                        allSheetsData['Sekolah'] = getRes.data;
+                        renderInlineFormSekolah();
+                    }
+                });
+            } else {
+                Swal.fire('Gagal', res.message, 'error');
+            }
+            
+            btn.innerHTML = oldText; btn.disabled = false;
+        }
 
         function setupToolbar(view) {
             const tb = document.getElementById('toolbarButtons'); 
             tb.innerHTML = '';
             const btnClass = "px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center focus:outline-none";
 
+            const filterRombel = document.getElementById('filterRombel');
+            const filterTahun = document.getElementById('filterTahunLulus');
+
+            filterRombel.classList.add('hidden');
+            filterTahun.classList.add('hidden');
+
             if (view === 'pegawai' || view === 'siswa') {
                 tb.innerHTML += `<button onclick="openFormModal()" class="bg-blue-600 hover:bg-blue-700 text-white ${btnClass}"><i class="fas fa-plus mr-2"></i> Tambah Data</button>`;
                 
-                // PERBAIKAN: Batasan Role untuk Export dan Import Excel
                 if (currentUser && currentUser.role === 'admin') {
                     tb.innerHTML += `<button onclick="downloadExcel()" class="bg-emerald-500 hover:bg-emerald-600 text-white ${btnClass}"><i class="fas fa-file-excel mr-2"></i> Ekspor Excel</button>`;
                     tb.innerHTML += `<button onclick="document.getElementById('excelFileInput').click()" class="bg-amber-500 hover:bg-amber-600 text-white ${btnClass}"><i class="fas fa-upload mr-2"></i> Impor Excel</button>`;
@@ -784,17 +912,27 @@
                     tb.innerHTML += `<button class="bg-slate-300 text-slate-500 cursor-not-allowed ${btnClass}" title="Akses Ditolak: Hanya Admin"><i class="fas fa-ban mr-2"></i> Impor Excel</button>`;
                 }
                 
+                if(view === 'siswa') filterRombel.classList.remove('hidden');
+
             } else if (view === 'mutasiMasuk') {
                 tb.innerHTML += `<button onclick="openFormModal()" class="bg-blue-600 hover:bg-blue-700 text-white ${btnClass}"><i class="fas fa-plus mr-2"></i> Tambah Mutasi</button>`;
             } else if (view === 'pengaturan') {
                 tb.innerHTML += `<button onclick="openFormModal()" class="bg-slate-800 hover:bg-slate-900 text-white ${btnClass}"><i class="fas fa-user-plus mr-2"></i> Tambah Akun</button>`;
+            } else if (view === 'siswaLulus') {
+                if (currentUser && currentUser.role === 'admin') {
+                   tb.innerHTML += `<button onclick="triggerLuluskanKelas6()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white ${btnClass}"><i class="fas fa-user-graduate mr-2"></i> Luluskan Kelas 6</button>`;
+                } else {
+                   tb.innerHTML += `<button class="bg-slate-300 text-slate-500 cursor-not-allowed ${btnClass}" title="Hanya Admin yang bisa meluluskan"><i class="fas fa-ban mr-2"></i> Luluskan Kelas 6</button>`;
+                }
+                filterTahun.classList.remove('hidden');
+                filterTahun.value = ''; 
             }
 
             document.getElementById('searchInput').value = '';
         }
 
         async function loadTableData(view, force = false) {
-            const map = { pegawai:'Pegawai', siswa:'Siswa', mutasiMasuk:'MutasiMasuk', mutasiKeluar:'MutasiKeluar', pengaturan:'Pengguna' };
+            const map = { pegawai:'Pegawai', siswa:'Siswa', mutasiMasuk:'MutasiMasuk', mutasiKeluar:'MutasiKeluar', pengaturan:'Pengguna', siswaLulus:'SiswaLulus' };
             activeSheet = map[view];
             
             if(force) await fetchReferenceData();
@@ -803,13 +941,11 @@
             
             const fRombel = document.getElementById('filterRombel');
             if (view === 'siswa') {
-                fRombel.classList.remove('hidden');
                 const rombels = [...new Set(rawData.map(r => r.rombel).filter(Boolean))].sort();
                 let opt = '<option value="">Semua Rombel</option>';
                 rombels.forEach(r => opt += `<option value="${r}">${r}</option>`);
                 fRombel.innerHTML = opt;
             } else { 
-                fRombel.classList.add('hidden'); 
                 fRombel.value = ""; 
             }
 
@@ -828,9 +964,16 @@
         function applyFilters() {
             let s = document.getElementById('searchInput').value.toLowerCase();
             let r = document.getElementById('filterRombel').value.toLowerCase();
+            let thn = document.getElementById('filterTahunLulus').value; 
+
             filteredData = rawData.filter(i => {
                 let ms = Object.values(i).some(v => v && v.toString().toLowerCase().includes(s));
-                let mr = r === "" || (i.rombel && i.rombel.toString().toLowerCase() === r);
+                let mr = true;
+                if(currentView === 'siswa') {
+                    mr = r === "" || (i.rombel && i.rombel.toString().toLowerCase() === r);
+                } else if (currentView === 'siswaLulus' && thn !== "") {
+                    mr = i.tanggal_lulus && i.tanggal_lulus.toString().includes(thn);
+                }
                 return ms && mr;
             });
             currentPage = 1; renderTableBody();
@@ -863,31 +1006,34 @@
                 });
                 
                 let btnHtml = `<div class="flex items-center justify-center space-x-2">`;
-                btnHtml += `<button onclick="openFormModal('${item.id}')" class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition flex items-center justify-center" title="Edit Data"><i class="fas fa-edit"></i></button>`;
                 
-                if(currentView === 'mutasiKeluar') {
-                    btnHtml += `<button onclick="tarikDataMutasi('${item.id}')" class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white transition flex items-center justify-center" title="Tarik Kembali ke Siswa"><i class="fas fa-undo"></i></button>`;
-                    
-                    if(item.link_surat && item.link_surat.toString().startsWith('http')) {
-                        btnHtml += `<button onclick="window.open('${item.link_surat}', '_blank')" class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition flex items-center justify-center" title="Buka Surat Cetak"><i class="fas fa-print"></i></button>`;
-                    } else {
-                        btnHtml += `<button onclick="Swal.fire('Dokumen Belum Tersedia', 'Link surat kosong. Silakan klik ikon Edit (pensil) lalu Simpan Data kembali untuk membuat dokumen.', 'info')" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-slate-300 hover:text-slate-600 transition flex items-center justify-center" title="Surat Belum Ada"><i class="fas fa-print"></i></button>`;
-                    }
-                } else if(currentView === 'siswa') {
-                    btnHtml += `<button onclick="mutasikanSiswa('${item.id}', '${item.nama}')" class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-600 hover:text-white transition flex items-center justify-center" title="Mutasikan Siswa"><i class="fas fa-sign-out-alt"></i></button>`;
-                } else if(currentView === 'mutasiMasuk') {
-                    if(item.link_surat && item.link_surat.toString().startsWith('http')) {
-                        btnHtml += `<button onclick="window.open('${item.link_surat}', '_blank')" class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition flex items-center justify-center" title="Buka Surat Cetak"><i class="fas fa-print"></i></button>`;
-                    } else {
-                        btnHtml += `<button onclick="Swal.fire('Dokumen Belum Tersedia', 'Link surat kosong. Silakan klik ikon Edit (pensil) lalu Simpan Data kembali untuk membuat dokumen.', 'info')" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-slate-300 hover:text-slate-600 transition flex items-center justify-center" title="Surat Belum Ada"><i class="fas fa-print"></i></button>`;
-                    }
-                }
-                
-                // PERBAIKAN: Batasan Role untuk tombol Hapus Permanen
-                if (currentUser && currentUser.role === 'admin') {
-                    btnHtml += `<button onclick="confirmDelete('${item.id}')" class="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white transition flex items-center justify-center" title="Hapus Permanen"><i class="fas fa-trash"></i></button></div>`;
+                if(currentView === 'siswaLulus') {
+                    btnHtml += `<button onclick="openViewModal('${item.id}', 'SiswaLulus')" class="w-8 h-8 rounded-lg bg-fuchsia-100 text-fuchsia-600 hover:bg-fuchsia-600 hover:text-white transition flex items-center justify-center" title="Lihat Data Lulus"><i class="fas fa-eye"></i></button>`;
                 } else {
-                    btnHtml += `<button class="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 cursor-not-allowed transition flex items-center justify-center" title="Akses Ditolak: Hanya Admin"><i class="fas fa-ban"></i></button></div>`;
+                    btnHtml += `<button onclick="openFormModal('${item.id}')" class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition flex items-center justify-center" title="Edit Data"><i class="fas fa-edit"></i></button>`;
+                    
+                    if(currentView === 'mutasiKeluar') {
+                        btnHtml += `<button onclick="tarikDataMutasi('${item.id}')" class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white transition flex items-center justify-center" title="Tarik Kembali ke Siswa"><i class="fas fa-undo"></i></button>`;
+                        if(item.link_surat && item.link_surat.toString().startsWith('http')) {
+                            btnHtml += `<button onclick="window.open('${item.link_surat}', '_blank')" class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition flex items-center justify-center" title="Buka Surat Cetak"><i class="fas fa-print"></i></button>`;
+                        } else {
+                            btnHtml += `<button onclick="Swal.fire('Dokumen Belum Tersedia', 'Sistem sedang memproses dokumen, harap tunggu sesaat...', 'info')" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-slate-300 hover:text-slate-600 transition flex items-center justify-center" title="Proses Dokumen"><i class="fas fa-print"></i></button>`;
+                        }
+                    } else if(currentView === 'siswa') {
+                        btnHtml += `<button onclick="mutasikanSiswa('${item.id}', '${item.nama}')" class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-600 hover:text-white transition flex items-center justify-center" title="Mutasikan Siswa"><i class="fas fa-sign-out-alt"></i></button>`;
+                    } else if(currentView === 'mutasiMasuk') {
+                        if(item.link_surat && item.link_surat.toString().startsWith('http')) {
+                            btnHtml += `<button onclick="window.open('${item.link_surat}', '_blank')" class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition flex items-center justify-center" title="Buka Surat Cetak"><i class="fas fa-print"></i></button>`;
+                        } else {
+                            btnHtml += `<button onclick="Swal.fire('Dokumen Belum Tersedia', 'Sistem sedang memproses dokumen, harap tunggu sesaat...', 'info')" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-slate-300 hover:text-slate-600 transition flex items-center justify-center" title="Proses Dokumen"><i class="fas fa-print"></i></button>`;
+                        }
+                    }
+                    
+                    if (currentUser && currentUser.role === 'admin') {
+                        btnHtml += `<button onclick="confirmDelete('${item.id}')" class="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white transition flex items-center justify-center" title="Hapus Permanen"><i class="fas fa-trash"></i></button></div>`;
+                    } else {
+                        btnHtml += `<button class="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 cursor-not-allowed transition flex items-center justify-center" title="Akses Ditolak: Hanya Admin"><i class="fas fa-ban"></i></button></div>`;
+                    }
                 }
                 
                 tr += `<td class="px-4 py-3 border-l border-slate-100">${btnHtml}</td></tr>`;
@@ -895,32 +1041,6 @@
             });
             document.getElementById('pageInfo').innerText = `Menampilkan ${start+1}-${Math.min(end, filteredData.length)} dari ${filteredData.length} data`;
             renderPagination();
-        }
-
-        async function cetakSuratDrive(id, jenis) {
-            Swal.fire({
-                title: 'Buat Surat Dokumen?',
-                text: "Sistem akan membuat file Mail Merge dan menyimpannya di Google Drive.",
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonColor: '#4f46e5',
-                confirmButtonText: 'Ya, Buat Dokumen'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    showLoader(true, "Membuat Dokumen...");
-                    try {
-                        const res = await apiCall('cetakSurat', { id, jenis });
-                        await fetchReferenceData(); // Sinkronkan data setelah mencetak agar link_surat tersimpan di frontend
-                        showLoader(false);
-                        if (res.success) {
-                            Swal.fire({
-                                title: 'Berhasil', text: 'Dokumen berhasil dibuat.', icon: 'success', showCancelButton: true, confirmButtonColor: '#10b981', cancelButtonColor: '#94a3b8', confirmButtonText: 'Buka Dokumen', cancelButtonText: 'Tutup'
-                            }).then((r) => { if(r.isConfirmed) window.open(res.url, '_blank'); });
-                            loadTableData(currentView, false);
-                        } else { Swal.fire('Gagal', res.message, 'error'); }
-                    } catch(e) { showLoader(false); Swal.fire('Error', 'Gagal memproses koneksi ke server.', 'error'); }
-                }
-            });
         }
 
         function renderPagination() {
@@ -933,9 +1053,7 @@
             let nextDisabled = currentPage === tp ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-50 text-slate-700';
 
             let html = `<button onclick="if(currentPage > 1) { currentPage--; renderTableBody(); }" class="px-4 py-1.5 rounded-lg border border-slate-200 focus:outline-none transition font-medium text-sm bg-white ${prevDisabled} flex items-center shadow-sm"><i class="fas fa-chevron-left mr-2"></i> Prev</button>`;
-            
             html += `<span class="px-4 py-1.5 text-sm font-semibold text-slate-600 bg-slate-50 rounded-lg border border-slate-100 shadow-sm mx-2">Page ${currentPage} of ${tp}</span>`;
-            
             html += `<button onclick="if(currentPage < ${tp}) { currentPage++; renderTableBody(); }" class="px-4 py-1.5 rounded-lg border border-slate-200 focus:outline-none transition font-medium text-sm bg-white ${nextDisabled} flex items-center shadow-sm">Next <i class="fas fa-chevron-right ml-2"></i></button>`;
 
             c.innerHTML = html;
@@ -945,6 +1063,56 @@
             rowsPerPage = document.getElementById('rowsPerPage').value === 'all' ? 9999 : parseInt(document.getElementById('rowsPerPage').value); 
             currentPage = 1; 
             renderTableBody(); 
+        }
+
+        function autoFillPangkat(valGolongan) {
+            const tabel = allSheetsData['Tabel'] || [];
+            const match = tabel.find(t => t.kd_golongan === valGolongan);
+            const elPangkat = document.getElementById('field_pangkat');
+            if (elPangkat) {
+                elPangkat.value = match && match.kd_pangkat ? match.kd_pangkat : '';
+            }
+        }
+
+        function triggerLuluskanKelas6() {
+            Swal.fire({
+                title: 'Luluskan Siswa Kelas 6',
+                html: `
+                    <div class="text-left">
+                        <p class="text-sm text-slate-500 mb-3">Sistem akan memindahkan semua siswa yang di Rombel-nya mengandung angka "6" atau "VI" dari Data Siswa Aktif ke Data Lulus.</p>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Tanggal Lulus:</label>
+                        <input type="date" id="inputTglLulus" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-fuchsia-500 outline-none" value="${new Date().toISOString().split('T')[0]}">
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#c026d3', 
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Konfirmasi Lulus',
+                cancelButtonText: 'Batal',
+                preConfirm: () => {
+                    const tgl = document.getElementById('inputTglLulus').value;
+                    if (!tgl) {
+                        Swal.showValidationMessage('Tanggal lulus wajib diisi!');
+                        return false;
+                    }
+                    return tgl;
+                }
+            }).then(async (result) => {
+                if(result.isConfirmed) {
+                    showLoader(true, "Memproses Data Kelulusan...");
+                    const res = await apiCall('prosesKelulusan', { tanggalLulus: result.value });
+                    
+                    showLoader(false); // MATIKAN LOADER INSTAN SEBELUM ALERT MUNCUL
+                    
+                    if(res.success) {
+                        Swal.fire('Berhasil', res.message, 'success');
+                        refreshActiveSheetData(); // PARTIAL SYNC DI LATAR
+                    } else {
+                        Swal.fire('Info', res.message, 'info'); 
+                    }
+                }
+            });
         }
 
         function openFormModal(id = null, override = null, configK = null) {
@@ -967,6 +1135,7 @@
                 if (ck === 'MutasiMasuk' && k === 'rombel') map = null; 
 
                 let input = '';
+                let onChangeAttr = (k === 'golongan') ? `onchange="autoFillPangkat(this.value)"` : '';
                 
                 if (ck === 'Pengguna' && k === 'role') {
                      input = `<select id="field_${k}" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm text-slate-700 shadow-sm">
@@ -980,7 +1149,9 @@
                         let list = [...new Set((allSheetsData['Tabel']||[]).map(t => t[map]).filter(Boolean))];
                         list.forEach(o => opt += `<option value="${o}" ${v===o?'selected':''}>${o}</option>`);
                     }
-                    input = `<select id="field_${k}" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm text-slate-700 shadow-sm">${opt}</select>`;
+                    input = `<select id="field_${k}" ${onChangeAttr} class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm text-slate-700 shadow-sm">${opt}</select>`;
+                } else if(k === 'pangkat') {
+                     input = `<input type="text" id="field_${k}" value="${v}" readonly class="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-500 shadow-sm cursor-not-allowed font-medium" placeholder="Otomatis mengikuti Golongan...">`;
                 } else if(k === 'password') {
                      input = `<div class="relative"><input type="password" id="field_${k}" value="${v}" class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm text-slate-700 shadow-sm"><button type="button" onclick="toggleFieldPwd('field_${k}')" class="absolute right-3 top-2.5 text-slate-400 focus:outline-none"><i class="fas fa-eye"></i></button></div>`;
                 } else if(k.includes('penghasilan')) {
@@ -997,7 +1168,7 @@
                              (k === 'nama_ibu') ? '<div class="col-span-1 md:col-span-2 border-t border-slate-200 mt-2 pt-4 w-full"><h4 class="text-sm font-bold text-slate-700 mb-2 tracking-wide text-pink-600 border-l-4 border-pink-500 pl-2 uppercase">Data Ibu Kandung</h4></div>' : 
                              (k === 'nama_wali') ? '<div class="col-span-1 md:col-span-2 border-t border-slate-200 mt-2 pt-4 w-full"><h4 class="text-sm font-bold text-slate-700 mb-2 tracking-wide text-amber-600 border-l-4 border-amber-500 pl-2 uppercase">Data Wali</h4></div>' : '';
                 
-                let wrapperClass = (k==='nama_ibu'||k==='nama_ayah'||k==='nama_wali') ? 'md:col-span-2 mb-3' : 'mb-3';
+                let wrapperClass = (k==='nama_ibu'||k==='nama_ayah'||k==='nama_wali'||k==='alamat_siswa') ? 'md:col-span-2 mb-3' : 'mb-3';
                 return `${prefix}<div class="${wrapperClass}"><label class="block text-xs font-bold text-slate-500 mb-1 ml-1">${l}</label>${input}</div>`;
             };
 
@@ -1024,6 +1195,45 @@
             m.classList.remove('hidden'); 
         }
 
+        function openViewModal(id, sheetName) {
+            const m = document.getElementById('viewModal');
+            const inc = document.getElementById('viewInputs');
+            const config = formConfig[sheetName];
+            const data = allSheetsData[sheetName].find(d => d.id === id) || {};
+            
+            let html = '';
+            
+            if (config && config.groups) {
+                for (let gn in config.groups) {
+                    html += `<div class="bg-slate-50 rounded-xl p-5 border border-slate-200">`;
+                    html += `<h4 class="text-sm font-bold text-fuchsia-600 uppercase mb-4 tracking-wider border-b border-slate-200 pb-2">${gn}</h4>`;
+                    html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">`;
+                    
+                    config.groups[gn].forEach(key => {
+                        let label = key.replace(/_/g,' ').toUpperCase();
+                        let v = data[key] || '-';
+                        if (typeof v === 'string' && v.startsWith("'")) v = v.substring(1);
+                        
+                        html += `
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400 mb-1">${label}</p>
+                                <p class="text-sm font-medium text-slate-800 bg-white px-3 py-2 border border-slate-200 rounded-lg">${v}</p>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div></div>`;
+                }
+            }
+            
+            inc.innerHTML = html;
+            m.classList.remove('hidden');
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.add('hidden');
+        }
+
         function formatCurrency(el) { let val = el.value.replace(/[^0-9]/g, ''); if(val) el.value = new Intl.NumberFormat('id-ID').format(val); else el.value = ''; }
         function toggleFieldPwd(id) { let el = document.getElementById(id); let icon = el.nextElementSibling.querySelector('i'); if (el.type === "password") { el.type = "text"; icon.classList.replace('fa-eye', 'fa-eye-slash'); } else { el.type = "password"; icon.classList.replace('fa-eye-slash', 'fa-eye'); } }
 
@@ -1045,30 +1255,42 @@
             const btn = document.getElementById('btnSubmitForm');
             let oldText = btn.innerHTML; btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...`; btn.disabled = true;
 
-            showLoader(true, "Menyimpan..."); 
+            // Jika Mutasi, berikan info bahwa dokumen sedang diproses
+            if (activeSheet === 'MutasiMasuk' || activeSheet === 'MutasiKeluar') {
+                showLoader(true, "Menyimpan Data & Dokumen..."); 
+            } else {
+                showLoader(true, "Menyimpan..."); 
+            }
+            
             const res = await apiCall('saveData', { sheetName: activeSheet, formData: fd }); 
             
-            await fetchReferenceData();
-            showLoader(false);
+            showLoader(false); // MATIKAN LOADER INSTAN SEBELUM ALERT MUNCUL
             
             if(res.success) { 
-                Swal.fire({title:'Berhasil!', text:'Data telah disimpan dan File Dokumen diperbarui.', icon:'success', timer: 1500, showConfirmButton: false}); 
+                Swal.fire({title:'Berhasil!', text: res.message || 'Data telah disimpan.', icon:'success', timer: 1500, showConfirmButton: false}); 
                 closeFormModal(); 
-                if(activeSheet === 'Sekolah') loadProfilSekolah(); else loadTableData(currentView, false);
+                refreshActiveSheetData(); // PARTIAL SYNC DI LATAR
             } else {
                 Swal.fire('Gagal', res.message, 'error');
             }
+            
             btn.innerHTML = oldText; btn.disabled = false;
         }
 
         async function confirmDelete(id) {
-            Swal.fire({ title: 'Hapus Permanen?', text: 'Tindakan ini tidak dapat dibatalkan.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus' }).then(async (r) => {
+            Swal.fire({ title: 'Hapus Permanen?', text: 'Tindakan ini tidak dapat dibatalkan. File dokumen juga akan dibersihkan.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus' }).then(async (r) => {
                 if(r.isConfirmed) { 
-                    showLoader(true, "Menghapus Data..."); 
+                    showLoader(true, "Menghapus Data & Dokumen..."); 
                     const res = await apiCall('deleteData', { sheetName: activeSheet, id }); 
-                    await fetchReferenceData(); // Sinkronkan
-                    showLoader(false); 
-                    if(res.success) loadTableData(currentView, false); 
+                    
+                    showLoader(false); // MATIKAN LOADER INSTAN SEBELUM ALERT MUNCUL
+                    
+                    if(res.success) {
+                        Swal.fire({title:'Terhapus!', icon:'success', timer: 1000, showConfirmButton: false});
+                        refreshActiveSheetData(); // PARTIAL SYNC DI LATAR
+                    } else {
+                        Swal.fire('Gagal', res.message, 'error');
+                    }
                 }
             });
         }
@@ -1127,7 +1349,7 @@
                 icon: 'info', 
                 showCancelButton: true, 
                 confirmButtonColor: '#f59e0b', 
-                confirmButtonText: 'Simpan & Cetak Dokumen',
+                confirmButtonText: 'Simpan & Proses Dokumen',
                 preConfirm: () => {
                     const tgl = document.getElementById('mutasi_tgl').value;
                     const sekolah = document.getElementById('mutasi_sekolah').value;
@@ -1150,15 +1372,14 @@
                 }
             }).then(async (r) => {
                 if(r.isConfirmed) { 
-                    showLoader(true, "Memproses Mutasi & Membuat Dokumen..."); 
+                    showLoader(true, "Memindahkan Siswa & Menyusun Dokumen..."); 
                     const res = await apiCall('prosesMutasi', { idSiswa: id, formData: r.value }); 
                     
-                    await fetchReferenceData();
+                    showLoader(false); // MATIKAN LOADER INSTAN SEBELUM ALERT MUNCUL
                     
-                    showLoader(false); 
                     if(res.success) {
                         Swal.fire('Berhasil', res.message, 'success');
-                        loadTableData(currentView, false); // Reload tabel Siswa
+                        refreshActiveSheetData(); // PARTIAL SYNC DI LATAR
                     } else {
                         Swal.fire('Gagal', res.message, 'error');
                     }
@@ -1167,15 +1388,16 @@
         }
 
         function tarikDataMutasi(id) { 
-            Swal.fire({ title:'Tarik Kembali?', text: "Kembalikan siswa ini ke data Siswa Aktif?", icon:'question', showCancelButton:true, confirmButtonColor: '#10b981', confirmButtonText: 'Ya, Tarik' }).then(async (r) => {
+            Swal.fire({ title:'Tarik Kembali?', text: "Kembalikan siswa ini ke data Siswa Aktif? Dokumen mutasi di Drive juga akan dihapus otomatis.", icon:'question', showCancelButton:true, confirmButtonColor: '#10b981', confirmButtonText: 'Ya, Tarik' }).then(async (r) => {
                 if(r.isConfirmed) { 
-                    showLoader(true, "Menarik Data..."); 
+                    showLoader(true, "Menarik Data & Membersihkan Dokumen..."); 
                     const res = await apiCall('tarikDataMutasi', { idSiswa:id }); 
-                    await fetchReferenceData(); // Sinkronkan
-                    showLoader(false); 
+                    
+                    showLoader(false); // MATIKAN LOADER INSTAN SEBELUM ALERT MUNCUL
+                    
                     if(res.success) {
                         Swal.fire('Berhasil', res.message, 'success');
-                        loadTableData(currentView, false);
+                        refreshActiveSheetData(); // PARTIAL SYNC DI LATAR
                     } else {
                         Swal.fire('Gagal', res.message, 'error');
                     }
@@ -1190,7 +1412,7 @@
                 const b = evt.target.result; const wb = XLSX.read(b, {type:'binary'}); const ws = wb.Sheets[wb.SheetNames[0]];
                 const json = XLSX.utils.sheet_to_json(ws, {defval:""});
                 showLoader(true, "Mengimpor Data..."); const res = await apiCall('importData', { sheetName: activeSheet, csvData: json }); showLoader(false);
-                if(res.success) { Swal.fire('Berhasil', 'Impor data sukses.', 'success'); loadTableData(currentView, true); }
+                if(res.success) { Swal.fire('Berhasil', 'Impor data sukses.', 'success'); refreshActiveSheetData(); }
             }; r.readAsBinaryString(file); e.target.value = '';
         }
         function showLoader(s, text = "Memproses Data...") { 

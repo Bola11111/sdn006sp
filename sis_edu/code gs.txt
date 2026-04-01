@@ -1,7 +1,7 @@
 /**
  * GAS WebApp BUILDER - School Information System
  * Backend Logic for Google Apps Script
- * KODE UTUH - FULL PRESERVATION
+ * KODE UTUH - FULL PRESERVATION (OPTIMIZED SYNC, SMART FIELD, DRIVE CLEANER & AUTO-SORT)
  */
 
 const SS_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
@@ -44,6 +44,7 @@ function initialSetup() {
   const siswaHeaders = [...siswaHeadersBase, 'Nomor HP'];
   const mutasiMasukHeaders = ['ID', 'Rombel', 'Nama', 'NISN', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Kelamin', 'Nama Sekolah', 'NPSN', 'Alamat Sekolah', 'Kelurahan Sekolah', 'Kecamatan Sekolah', 'Kab Kota', 'Propinsi', 'Alasan Pindah', 'Tanggal Pindah', 'Nomor Surat', 'Link Surat', 'Timestamp'];
   const mutasiKeluarHeaders = [...siswaHeadersBase, 'Nama Sekolah', 'NPSN', 'Alamat Sekolah', 'Kelurahan Sekolah', 'Kecamatan Sekolah', 'Kab Kota', 'Propinsi', 'Alasan Pindah', 'Tanggal Pindah', 'Nomor Surat', 'Link Surat', 'Nomor HP', 'Timestamp'];
+  const siswaLulusHeaders = [...siswaHeadersBase, 'Nomor HP', 'Tanggal Lulus', 'Timestamp'];
 
   const sheetsNeeded = [
     { name: 'Sekolah', headers: sekolahHeaders },
@@ -51,9 +52,9 @@ function initialSetup() {
     { name: 'Siswa', headers: siswaHeaders },
     { name: 'MutasiMasuk', headers: mutasiMasukHeaders },
     { name: 'MutasiKeluar', headers: mutasiKeluarHeaders },
+    { name: 'SiswaLulus', headers: siswaLulusHeaders },
     { name: 'Pengguna', headers: ['ID', 'Username', 'Password', 'Nama', 'Role'] },
     { name: 'Tabel', headers: ['kd rombel', 'kd kelamin', 'kd agama', 'kd kawin', 'kd pekerjaan', 'kd pangkat', 'kd golongan', 'kd jabatan', 'kd jenis', 'kd status', 'kd berkebutuhan', 'kd tinggal', 'kd transportasi', 'kd pendidikan'] },
-    // PERBAIKAN: Penambahan Sheet Log Aktivitas
     { name: 'Log Aktivitas', headers: ['Timestamp', 'Pengguna', 'Aktivitas', 'Detail'] }
   ];
 
@@ -82,7 +83,6 @@ function initialSetup() {
   }
 }
 
-// PERBAIKAN: Fungsi Ringan Pencatat Aktivitas di Latar Belakang
 function catatLog(user, aktivitas, detail) {
   try {
     const ss = SpreadsheetApp.openById(SS_ID);
@@ -135,6 +135,12 @@ function doPost(e) {
         result.success = tarikRes.success;
         result.message = tarikRes.message;
         break;
+      case 'prosesKelulusan':
+        const lulusRes = prosesKelulusanKelas6(data.tanggalLulus, data.user);
+        result.success = lulusRes.success;
+        result.message = lulusRes.message;
+        result.count = lulusRes.count;
+        break;
       case 'importData':
         result.success = importDataCSV(data.sheetName, data.csvData, data.user);
         result.message = result.success ? "Data berhasil diimpor" : "Gagal impor";
@@ -161,7 +167,7 @@ function loginHandle(username, password) {
 
 function fetchAllData() {
   const ss = SpreadsheetApp.openById(SS_ID);
-  const sheets = ['Tabel', 'Sekolah', 'Siswa', 'Pegawai', 'MutasiMasuk', 'MutasiKeluar', 'Pengguna'];
+  const sheets = ['Tabel', 'Sekolah', 'Siswa', 'Pegawai', 'MutasiMasuk', 'MutasiKeluar', 'SiswaLulus', 'Pengguna'];
   const result = {};
   
   sheets.forEach(sheetName => {
@@ -224,7 +230,9 @@ function saveData(sheetName, formData, user) {
     formData.id = id;
   }
 
-  if (sheetName === 'MutasiMasuk' || sheetName === 'MutasiKeluar') {
+  let dataChanged = false; // DIRTY CHECKING FLAG
+
+  if (sheetName === 'MutasiMasuk' || sheetName === 'MutasiKeluar' || sheetName === 'SiswaLulus') {
      formData['timestamp'] = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
   }
 
@@ -239,27 +247,52 @@ function saveData(sheetName, formData, user) {
     if (val === undefined || val === null) val = "";
     val = val.toString().trim();
     
-    if (val === "0" || val === "-") return "'" + val; 
-    if (val.match(/^[0-9]+$/) && val.length > 5 && !val.startsWith("'")) val = "'" + val; 
+    // SMART FIELD: Proteksi Dinamis untuk semua angka berawalan Nol di SEMUA menu
+    if (val.match(/^[0-9]+$/) && val.startsWith("0")) {
+        val = "'" + val;
+    } else if (val === "0" || val === "-") {
+        val = "'" + val; 
+    } else if (val.match(/^[0-9]+$/) && val.length > 5 && !val.startsWith("'")) {
+        val = "'" + val; 
+    }
     
+    // Cek apakah data inputan berbeda dengan data yang ada di database
+    if (isUpdate && val.toString() !== dataRows[rowIdx - 1][colIdx].toString()) {
+        dataChanged = true;
+    }
+
     return val;
   });
 
   if (isUpdate) {
-    sheet.getRange(rowIdx, 1, 1, headers.length).setValues([newRow]);
+    // EKSEKUSI HANYA JIKA ADA PERUBAHAN
+    if (dataChanged) {
+        sheet.getRange(rowIdx, 1, 1, headers.length).setValues([newRow]);
+    } else {
+        // Jika tidak ada perubahan, langsung return sukses tanpa eksekusi berat
+        return { success: true, message: "Tidak ada perubahan data." };
+    }
   } else {
     sheet.appendRow(newRow);
     rowIdx = sheet.getLastRow();
+    dataChanged = true; // Data baru pasti dianggap changed
   }
 
-  if (sheetName === 'Siswa' && sheet.getLastRow() > 1) {
-    sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).sort([{column: 2, ascending: true}, {column: 3, ascending: true}]);
+  // AUTO SORT (Siswa & Pegawai) HANYA jika ada Data Baru/Perubahan
+  if (dataChanged) {
+    if (sheetName === 'Siswa' && sheet.getLastRow() > 1) {
+      sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).sort([{column: 2, ascending: true}, {column: 3, ascending: true}]);
+    } else if (sheetName === 'Pegawai' && sheet.getLastRow() > 1) {
+      sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).sort([{column: 2, ascending: true}]);
+    }
   }
 
-  // PERBAIKAN: Merekam Log setiap aksi simpan
-  let detailInfo = formData.nama || formData.nama_sekolah || formData.username || id;
-  let actionName = isUpdate ? 'Memperbarui' : 'Menambah';
-  catatLog(user, `${actionName} Data ${sheetName}`, `Data: ${detailInfo}`);
+  // Catat Log
+  if (dataChanged) {
+    let detailInfo = formData.nama || formData.nama_sekolah || formData.username || id;
+    let actionName = isUpdate ? 'Memperbarui' : 'Menambah';
+    catatLog(user, `${actionName} Data ${sheetName}`, `Data: ${detailInfo}`);
+  }
 
   // ==========================================
   // AUTO GENERATE SURAT MUTASI SAAT SIMPAN
@@ -288,22 +321,42 @@ function saveData(sheetName, formData, user) {
   return { success: true, message: "Data berhasil disimpan!" };
 }
 
+// HELPER: Ekstrak ID File Drive dari URL
+function extractDriveFileId(url) {
+  if (!url) return null;
+  let match = url.match(/\/d\/(.+?)\//);
+  if (match && match[1]) return match[1];
+  match = url.match(/id=([^&]+)/);
+  if (match && match[1]) return match[1];
+  return null;
+}
+
 function deleteData(sheetName, id, user) {
   const ss = SpreadsheetApp.openById(SS_ID);
   const sheet = ss.getSheetByName(sheetName);
   const data = sheet.getDataRange().getValues();
-  const idIdx = data[0].findIndex(h => h.toLowerCase() === 'id');
+  const headers = data[0];
+  const idIdx = headers.findIndex(h => h.toLowerCase() === 'id');
   
   for (let i = 1; i < data.length; i++) {
     if (data[i][idIdx].toString() === id.toString()) {
       
-      // Ambil detail nama untuk mempermudah identifikasi log
-      const namaIdx = data[0].findIndex(h => h.toLowerCase() === 'nama');
+      const namaIdx = headers.findIndex(h => h.toLowerCase() === 'nama');
       let detail = namaIdx > -1 ? data[i][namaIdx] : id;
+
+      // DRIVE CLEANER: Cek jika ada file dokumen yang tersangkut sebelum baris dihapus
+      if (sheetName === 'MutasiMasuk' || sheetName === 'MutasiKeluar') {
+        const linkIdx = headers.findIndex(h => h.toLowerCase().replace(/\s+/g, '_') === 'link_surat');
+        if (linkIdx > -1 && data[i][linkIdx]) {
+          const fileId = extractDriveFileId(data[i][linkIdx]);
+          if (fileId) {
+            try { DriveApp.getFileById(fileId).setTrashed(true); } catch(e) { console.warn("Gagal hapus file drive: " + e); }
+          }
+        }
+      }
 
       sheet.deleteRow(i + 1);
       
-      // PERBAIKAN: Merekam Log Penghapusan
       catatLog(user, `Menghapus Data ${sheetName}`, `Identitas Terhapus: ${detail}`);
       
       return { success: true, message: "Terhapus!" };
@@ -333,12 +386,93 @@ function tarikDataMutasi(idSiswa, user) {
   
   const res = saveData('Siswa', mutasi, user);
   if (res.success) {
+    // Fungsi deleteData akan otomatis menjalankan Drive Cleaner
     deleteData('MutasiKeluar', idSiswa, user);
     catatLog(user, `Tarik Batal Mutasi`, `Siswa: ${mutasi.nama}`);
     return { success: true, message: "Data berhasil ditarik kembali ke Siswa Aktif" };
   }
   return res;
 }
+
+// --- START PROSES KELULUSAN KELAS 6 (BATCH PROCESSING / MASSAL) --- //
+function prosesKelulusanKelas6(tanggalLulus, user) {
+  try {
+    const ss = SpreadsheetApp.openById(SS_ID);
+    const sheetSiswa = ss.getSheetByName('Siswa');
+    const sheetLulus = ss.getSheetByName('SiswaLulus');
+    
+    if (!sheetSiswa || !sheetLulus) return { success: false, message: "Sheet Siswa atau SiswaLulus tidak ditemukan." };
+
+    const dataSiswa = sheetSiswa.getDataRange().getDisplayValues();
+    if (dataSiswa.length <= 1) return { success: false, message: "Tidak ada data siswa." };
+
+    const headerSiswa = dataSiswa[0];
+    const headerLulus = sheetLulus.getRange(1, 1, 1, sheetLulus.getLastColumn()).getValues()[0];
+    
+    const rombelIdx = headerSiswa.findIndex(h => h.toString().toLowerCase() === 'rombel');
+    if (rombelIdx === -1) return { success: false, message: "Kolom Rombel tidak ditemukan." };
+
+    // Map Index Header Siswa untuk pencarian instan (O(1) lookup)
+    const headerSiswaIdxMap = {};
+    headerSiswa.forEach((h, i) => headerSiswaIdxMap[h.toLowerCase().replace(/\s+/g, '_')] = i);
+
+    const ts = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
+    
+    // Array penampung massal
+    const barisDipertahankan = [];
+    const barisKelulusan = [];
+    
+    // Looping data cukup di memori aplikasi (Sangat Cepat)
+    for (let i = 1; i < dataSiswa.length; i++) {
+      const row = dataSiswa[i];
+      const rombel = row[rombelIdx].toString().trim().toUpperCase();
+      
+      if (rombel.includes('6') || rombel.includes('VI')) {
+        // Susun baris baru mengikuti urutan header SiswaLulus secara presisi
+        const newRow = headerLulus.map(h => {
+          const key = h.toLowerCase().replace(/\s+/g, '_');
+          if (key === 'tanggal_lulus') return tanggalLulus;
+          if (key === 'timestamp') return ts;
+          
+          const sIdx = headerSiswaIdxMap[key];
+          if (sIdx !== undefined) {
+            let val = row[sIdx].toString().trim();
+            if (val === "0" || val === "-") return "'" + val; 
+            if (val.match(/^[0-9]+$/) && val.length > 5 && !val.startsWith("'")) val = "'" + val; 
+            return val;
+          }
+          return "";
+        });
+        barisKelulusan.push(newRow);
+      } else {
+        barisDipertahankan.push(row);
+      }
+    }
+
+    if (barisKelulusan.length > 0) {
+      // 1. Eksekusi Massal: Sisipkan ke SiswaLulus dalam 1 API call
+      sheetLulus.getRange(sheetLulus.getLastRow() + 1, 1, barisKelulusan.length, headerLulus.length).setValues(barisKelulusan);
+      
+      // 2. Eksekusi Massal: Bersihkan Siswa dan tulis ulang yang tersisa dalam 2 API call
+      const lastRowSiswa = sheetSiswa.getLastRow();
+      if (lastRowSiswa > 1) {
+        sheetSiswa.getRange(2, 1, lastRowSiswa - 1, sheetSiswa.getLastColumn()).clearContent();
+      }
+      if (barisDipertahankan.length > 0) {
+        sheetSiswa.getRange(2, 1, barisDipertahankan.length, headerSiswa.length).setValues(barisDipertahankan);
+      }
+      
+      catatLog(user, `Proses Kelulusan Kelas 6`, `Sebanyak ${barisKelulusan.length} siswa diluluskan massal pada ${tanggalLulus}`);
+      return { success: true, count: barisKelulusan.length, message: `${barisKelulusan.length} Siswa Kelas 6 berhasil diluluskan secara massal!` };
+    } else {
+      return { success: false, count: 0, message: "Tidak ada siswa Kelas 6 yang ditemukan." };
+    }
+
+  } catch (err) {
+    return { success: false, message: err.toString() };
+  }
+}
+// --- END PROSES KELULUSAN KELAS 6 --- //
 
 function importDataCSV(sheetName, csvArray, user) {
   try {
@@ -353,6 +487,7 @@ function importDataCSV(sheetName, csvArray, user) {
         val = val.toString().trim();
         
         if (key === 'id' && val === "") return Utilities.getUuid();
+        if (val.match(/^[0-9]+$/) && val.startsWith("0")) return "'" + val; // Smart Field Proteksi
         if (val === "0" || val === "-") return "'" + val; 
         if (val.match(/^[0-9]+$/) && val.length > 5 && !val.startsWith("'")) val = "'" + val;
         return val;
@@ -363,8 +498,8 @@ function importDataCSV(sheetName, csvArray, user) {
     if (newRows.length > 0) {
       sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, headers.length).setValues(newRows);
       if (sheetName === 'Siswa') sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).sort([{column: 2, ascending: true}, {column: 3, ascending: true}]);
+      if (sheetName === 'Pegawai') sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).sort([{column: 2, ascending: true}]);
       
-      // PERBAIKAN: Merekam Log Import Excel
       catatLog(user, `Import Excel ke ${sheetName}`, `Sebanyak ${newRows.length} baris data`);
     }
     return true;
@@ -477,25 +612,18 @@ function formatTanggalIndo(dateStr) {
   return dateStr;
 }
 
-/**
- * PENTING: Anda sekarang BISA menjalankan fungsi ini dari dalam editor Google Apps Script!
- * Jika dijalankan, Google akan langsung meminta Review Permissions.
- */
 function pancinganOtoritas() {
   try {
     const doc = DocumentApp.create("Test_Pancingan_Otoritas");
     const file = DriveApp.getFileById(doc.getId());
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     file.setTrashed(true);
-    Logger.log('✅ OTORITAS SUKSES! Sistem kini memiliki izin penuh untuk membuat Dokumen dan Link Surat secara otomatis. Silakan kembali ke WebApp dan coba simpan data.');
+    Logger.log('✅ OTORITAS SUKSES! Sistem kini memiliki izin penuh.');
     try {
       const ui = SpreadsheetApp.getUi();
       ui.alert('✅ Otoritas Berhasil!', 'Sistem kini memiliki izin penuh. Silakan kembali ke WebApp.', ui.ButtonSet.OK);
     } catch (uiErr) {}
   } catch (e) {
     Logger.log('❌ GAGAL: Error Otoritas: ' + e.toString());
-    try {
-      SpreadsheetApp.getUi().alert('❌ Gagal', 'Error: ' + e.toString(), SpreadsheetApp.getUi().ButtonSet.OK);
-    } catch (uiErr) {}
   }
 }
