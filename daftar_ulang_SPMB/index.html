@@ -5,46 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aplikasi Surat Mutasi - SDN 006</title>
     <style>
-        /* Reset Dasar */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body, html {
-            height: 100%;
-            width: 100%;
-            overflow: hidden; /* Mencegah scrollbar ganda */
-            background-color: #ffffff;
+            height: 100%; width: 100%;
+            overflow: hidden; 
+            background-color: #f3f4f6; /* Warna dasar abu-abu muda ala Tailwind */
         }
 
-        /* Wrapper Sekuat Kode 3 */
         #app-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            z-index: 999999;
-            display: flex;
+            position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            width: 100%; height: 100%;
+            border: none; z-index: 999999;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Teks loading saat GAS masih memuat */
+        .loading-text {
+            position: absolute;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #6b7280;
+            font-weight: 500;
         }
 
         iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
+            position: relative; /* Agar berada di atas teks loading */
+            z-index: 10;
+            width: 100%; height: 100%;
+            border: none; display: block;
+            background: transparent;
         }
     </style>
 </head>
 <body>
 
     <div id="app-container">
-        <!-- Ganti URL di bawah dengan URL /exec milik Anda -->
+        <div class="loading-text">Memuat Aplikasi...</div>
+        
+        <!-- Ganti URL_GAS dengan URL /exec -->
         <iframe 
             src="https://script.google.com/macros/s/AKfycbxe5yFMwLKq8IdApIU04muXWdyBDjz_J6I7isT6DdPeaohLQ92AaV08IVcf41mIfhEK0A/exec" 
             allow="geolocation; microphone; camera; midi; encrypted-media; clipboard-read; clipboard-write"
