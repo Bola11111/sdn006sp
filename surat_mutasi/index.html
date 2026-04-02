@@ -89,7 +89,7 @@
       box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
       background: #fff;
     }
-    .readonly-field { background-color: #f8fafc !important; font-weight: 600; color: #64748b; border-style: dashed; }
+    .readonly-field { background-color: #f8fafc !important; font-weight: 600; color: #64748b; border-style: dashed; cursor: not-allowed; }
 
     /* Button Styling */
     .btn-primary { background: #3b82f6; border: none; border-radius: 14px; padding: 15px; font-weight: 800; transition: all 0.3s; }
@@ -137,14 +137,14 @@
       <img src="https://raw.githubusercontent.com/Bola11111/sdn006sp/refs/heads/main/Logo_Kota_Samarinda.png" 
            alt="Logo Pemkot Samarinda" 
            style="width: 100px; height: auto; margin-bottom: 20px;">
-	  
+    
       <h3 class="fw-extrabold">Layanan Mutasi Siswa</h3>
       <p class="text-muted">Gunakan NISN Siswa untuk Membuka Formulir Pengajuan</p>
     </div>
 
     <div class="nisn-input-box mx-auto" style="max-width: 400px;">
       <label class="text-center w-100 mb-2">IDENTITAS AKSES</label>
-      <input type="text" id="inputNisnKunci" class="form-control form-control-lg text-center fw-bold shadow-sm" placeholder="--- MASUKKAN NISN ---" inputmode="numeric">
+      <input type="text" id="inputNisnKunci" class="form-control form-control-lg text-center fw-bold shadow-sm" placeholder="--- MASUKKAN NISN ---" inputmode="text">
       <button id="btnVerifikasi" class="btn btn-primary w-100 mt-3 py-3 shadow" onclick="verifikasiAkses()">
         <i class="bi bi-unlock-fill me-2"></i>BUAT FORMULIR BARU
       </button>
@@ -158,10 +158,10 @@
     </div>
 
     <form id="mutasiForm">
-      <div class="section-divider">1. Identitas Siswa Terdata</div>
+      <div class="section-divider">1. Identitas Siswa Terdata (Hanya Lihat)</div>
       <div class="row px-2">
         <div class="col-md-6 form-group">
-          <label>Kelas Aktif</label>
+          <label>Kelas Aktif (Rombel)</label>
           <input type="text" id="kelas" class="form-control readonly-field" readonly>
         </div>
         <div class="col-md-6 form-group">
@@ -189,22 +189,22 @@
         </div>
       </div>
 
-      <div class="section-divider">2. Tujuan & Lokasi Mutasi</div>
+      <div class="section-divider">2. Tujuan & Lokasi Mutasi (Wajib Diisi)</div>
       <div class="form-group">
         <label>Nama Sekolah Tujuan</label>
         <input type="text" id="sekolahTujuan" class="form-control" placeholder="Contoh: SD NEGERI 001 SAMARINDA" required oninput="tutupKecil(this); validate()">
       </div>
       <div class="form-group">
         <label>NPSN Sekolah Tujuan (Opsional)</label>
-        <input type="text" id="npsn" class="form-control" placeholder="Masukkan 8 digit NPSN" oninput="validate()">
+        <input type="text" id="npsn" class="form-control" placeholder="Masukkan 8 digit NPSN" inputmode="numeric" oninput="validate()">
       </div>
       <div class="form-group">
         <label>Alamat Sekolah Tujuan</label>
-        <input type="text" id="alamat" class="form-control" placeholder="Nama Jalan / Kampung" oninput="kapitalAwal(this); validate()">
+        <input type="text" id="alamat" class="form-control" placeholder="Nama Jalan / Kampung" required oninput="kapitalAwal(this); validate()">
       </div>
       <div class="row px-2">
-        <div class="col-md-6 form-group"><label>Kelurahan</label><input type="text" id="kel" class="form-control" oninput="kapitalAwal(this); validate()"></div>
-        <div class="col-md-6 form-group"><label>Kecamatan</label><input type="text" id="kec" class="form-control" oninput="kapitalAwal(this); validate()"></div>
+        <div class="col-md-6 form-group"><label>Kelurahan Tujuan</label><input type="text" id="kel" class="form-control" required oninput="kapitalAwal(this); validate()"></div>
+        <div class="col-md-6 form-group"><label>Kecamatan Tujuan</label><input type="text" id="kec" class="form-control" required oninput="kapitalAwal(this); validate()"></div>
       </div>
       <div class="row px-2">
         <div class="col-md-6 form-group"><label>Kota/Kabupaten</label><input type="text" id="kota" class="form-control" required oninput="kapitalAwal(this); validate()"></div>
@@ -219,22 +219,22 @@
         </div>
         <div class="col-md-6 form-group">
           <label>Keterangan Status</label>
-          <input type="text" id="keterangan" class="form-control readonly-field" value="Mutasi" readonly>
+          <input type="text" id="keterangan" class="form-control readonly-field" value="Pindah Sekolah / Mutasi" readonly>
         </div>
       </div>
       <div class="form-group">
         <label>Upload Surat Rekomendasi (PDF/JPG)</label>
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-cloud-arrow-up"></i></span>
-          <input type="file" id="fileIn" class="form-control" required onchange="validate()">
+          <input type="file" id="fileIn" class="form-control" accept=".pdf, .jpg, .jpeg, .png" required onchange="validate()">
         </div>
       </div>
 
       <div class="form-group">
         <div class="alert alert-warning border-0 rounded-4 p-3 mb-0">
           <div class="d-flex gap-2">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <small>Pastikan data benar. Dokumen PDF akan digenerate otomatis berdasarkan isian ini.</small>
+            <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+            <small>Pastikan data sekolah tujuan dan alamat sudah benar. Dokumen PDF akan digenerate otomatis berdasarkan isian ini.</small>
           </div>
         </div>
       </div>
@@ -243,7 +243,7 @@
         <button type="submit" id="btn" class="btn btn-primary w-100 py-3 fw-bold" disabled>KIRIM & PROSES DOKUMEN</button>
         <div class="text-center mt-3">
           <a href="#" onclick="showSection('home')" class="text-secondary small text-decoration-none">
-            <i class="bi bi-arrow-left"></i> Batal dan Kembali
+            <i class="bi bi-arrow-left"></i> Batal dan Kembali ke Awal
           </a>
         </div>
       </div>
@@ -253,20 +253,26 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // URL Web App dari GAS
+  // -------------------------------------------------------------------------
+  // WAJIB GANTI URL DI BAWAH INI SETELAH DEPLOY VERSI BARU!
+  // -------------------------------------------------------------------------
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzwCjKV8I2-74bt8uSV2QrfjGS0x85tyONiPBKj8Pv01rrfWxOt9Lsmm9-IqUjcCvqmaA/exec";
   let master = [];
 
   window.onload = () => { 
     document.getElementById('loading').style.visibility = 'visible';
-    fetch(`${WEB_APP_URL}?action=getSiswa`)
+    
+    // Fitur Anti-Cache
+    const noCacheUrl = `${WEB_APP_URL}?action=getSiswa&v=${new Date().getTime()}`;
+    
+    fetch(noCacheUrl)
       .then(res => res.json())
       .then(d => {
         master = d;
         document.getElementById('loading').style.visibility = 'hidden';
       })
       .catch(err => {
-        Swal.fire('Error', 'Gagal memuat database!', 'error');
+        Swal.fire('Error', 'Gagal memuat database! Pastikan URL Web App benar.', 'error');
         document.getElementById('loading').style.visibility = 'hidden';
       });
   };
@@ -287,6 +293,7 @@
     }
 
     const siswa = master.find(x => String(x.nisn).trim() === nisnInput);
+    
     if (siswa) {
       Swal.fire({
         title: 'Akses Diterima!',
@@ -294,29 +301,43 @@
         icon: 'success', timer: 1500, showConfirmButton: false,
         didClose: () => {
           showSection('form');
-          ['kelas','nama','nisn','jk','tempatLahir','tanggalLahir'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.value = siswa[id] || "";
-          });
-          // Fix untuk format tanggal lahir jika dari GAS bentuknya beda
-          if(siswa.tanggalLahir) document.getElementById('tanggalLahir').value = siswa.tanggalLahir;
+          document.getElementById('kelas').value = siswa.rombel || "";
+          document.getElementById('nisn').value = siswa.nisn || "";
+          document.getElementById('nama').value = siswa.nama || "";
+          document.getElementById('jk').value = siswa.jk || "";
+          document.getElementById('tempatLahir').value = siswa.tempatLahir || "";
+          document.getElementById('tanggalLahir').value = siswa.tanggalLahir || "";
           validate();
         }
       });
     } else {
-      Swal.fire({ icon: 'error', title: 'Tidak Ditemukan', text: 'NISN tidak terdaftar di database SDN 006!', confirmButtonColor: '#ef4444' });
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Tidak Ditemukan', 
+        text: 'NISN tidak terdaftar di database SDN 006!', 
+        confirmButtonColor: '#ef4444' 
+      });
     }
   }
 
   function showSection(s) { 
     document.getElementById('home-section').classList.toggle('hidden', s !== 'home');
     document.getElementById('form-section').classList.toggle('hidden', s !== 'form');
+    if(s === 'home') {
+      document.getElementById('mutasiForm').reset();
+      document.getElementById('inputNisnKunci').value = '';
+    }
     window.scrollTo(0,0);
   }
 
   function validate() {
-    const v = (id) => document.getElementById(id).value;
-    const isOk = (v('sekolahTujuan') && v('kota') && v('prov') && v('tglMutasi') && document.getElementById('fileIn').files.length > 0);
+    const v = (id) => document.getElementById(id).value.trim();
+    const isOk = (
+      v('sekolahTujuan') && v('alamat') && v('kel') && v('kec') && 
+      v('kota') && v('prov') && v('tglMutasi') && 
+      document.getElementById('fileIn').files.length > 0
+    );
+    
     const btn = document.getElementById('btn');
     btn.disabled = !isOk;
     if(isOk) {
@@ -329,11 +350,13 @@
   document.getElementById('mutasiForm').onsubmit = function(e) {
     e.preventDefault();
     const b = document.getElementById('btn'); 
-    b.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses Database...'; 
+    b.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan Data...'; 
     b.disabled = true;
+    document.getElementById('loading').style.visibility = 'visible'; 
     
     const file = document.getElementById('fileIn').files[0];
     const reader = new FileReader();
+    
     reader.onload = function(r) {
       const payload = {
         obj: {
@@ -343,55 +366,70 @@
           nisn: document.getElementById('nisn').value, 
           tempatLahir: document.getElementById('tempatLahir').value,
           tanggalLahir: document.getElementById('tanggalLahir').value, 
-          sekolahTujuan: document.getElementById('sekolahTujuan').value,
-          npsn: document.getElementById('npsn').value, 
-          alamat: document.getElementById('alamat').value, 
-          kelurahan: document.getElementById('kel').value, 
-          kecamatan: document.getElementById('kec').value, 
-          kota: document.getElementById('kota').value, 
-          provinsi: document.getElementById('prov').value,
+          // Data Mutasi
+          sekolahTujuan: document.getElementById('sekolahTujuan').value.trim(),
+          npsn: document.getElementById('npsn').value.trim(), 
+          alamat: document.getElementById('alamat').value.trim(), 
+          kelurahan: document.getElementById('kel').value.trim(), 
+          kecamatan: document.getElementById('kec').value.trim(), 
+          kota: document.getElementById('kota').value.trim(), 
+          provinsi: document.getElementById('prov').value.trim(),
           keterangan: document.getElementById('keterangan').value,
           tanggalMutasi: document.getElementById('tglMutasi').value
         },
-        fileData: {data: r.target.result.split(',')[1], type: file.type}
+        fileData: {
+          data: r.target.result.split(',')[1], 
+          type: file.type
+        }
       };
 
       fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) })
       .then(res => res.json())
       .then(res => {
+        document.getElementById('loading').style.visibility = 'hidden';
         if(res.status === "Sukses") {
           Swal.fire({
             title: 'Berhasil Terkirim!',
-            html: `Data <b>${res.nama}</b> telah diperbarui.<br><br>` +
-                  `<button id="downloadBtn" class="btn btn-danger w-100 py-3 fw-bold">` +
-                  `<i class="bi bi-file-pdf me-2"></i>UNDUH SURAT MUTASI (PDF)</button>`,
+            html: `Dokumen atas nama <b>${res.nama}</b> telah dibuat.<br><br>` +
+                  `<button id="downloadBtn" class="btn btn-danger w-100 py-3 fw-bold shadow">` +
+                  `<i class="bi bi-file-earmark-pdf-fill me-2"></i>UNDUH SURAT MUTASI</button>`,
             icon: 'success',
-            confirmButtonText: 'Selesai',
+            allowOutsideClick: false,
+            showConfirmButton: true,
+            confirmButtonText: 'Tutup & Selesai',
             confirmButtonColor: '#0f172a',
             didOpen: () => {
               document.getElementById('downloadBtn').onclick = () => {
-                const byteCharacters = atob(res.pdfData);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); }
-                const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], {type: 'application/pdf'});
+                // Trik Instan PDF Download via URL Export
                 const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
+                link.href = res.exportUrl;
                 link.download = res.fileName;
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
               };
             }
-          }).then(() => { location.reload(); });
+          }).then((result) => { 
+            if(result.isConfirmed) {
+              showSection('home'); // FIX: Mengganti location.reload() agar tidak blank screen
+              b.innerHTML = 'KIRIM & PROSES DOKUMEN'; 
+              b.disabled = false;
+            }
+          });
         } else {
-          Swal.fire('Gagal', res.message, 'error');
-          b.innerHTML = 'KIRIM & PROSES DOKUMEN'; b.disabled = false;
+          Swal.fire('Gagal Memproses', res.message, 'error');
+          b.innerHTML = 'KIRIM & PROSES DOKUMEN'; 
+          b.disabled = false;
         }
       })
       .catch(err => {
-        Swal.fire('Error', 'Gagal terhubung ke server!', 'error');
-        b.innerHTML = 'KIRIM & PROSES DOKUMEN'; b.disabled = false;
+        document.getElementById('loading').style.visibility = 'hidden';
+        Swal.fire('Error Koneksi', 'Gagal terhubung ke server/database!', 'error');
+        b.innerHTML = 'KIRIM & PROSES DOKUMEN'; 
+        b.disabled = false;
       });
     };
+    
     reader.readAsDataURL(file);
   };
 </script>
