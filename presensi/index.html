@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Presensi</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body, html {
+            height: 100%; width: 100%;
+            overflow: hidden; 
+            background-color: #f3f4f6; /* Warna dasar abu-abu muda ala Tailwind */
+        }
+
+        #app-container {
+            position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            width: 100%; height: 100%;
+            border: none; z-index: 999999;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Teks loading saat GAS masih memuat */
+        .loading-text {
+            position: absolute;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        iframe {
+            position: relative; /* Agar berada di atas teks loading */
+            z-index: 10;
+            width: 100%; height: 100%;
+            border: none; display: block;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <div class="loading-text">Memuat Aplikasi...</div>
+        
+        <!-- Ganti URL_GAS dengan URL /exec -->
+        <iframe 
+            src="https://script.google.com/macros/s/AKfycbw2zeDG1cSnYPvdV6tnOGQpHxxhQY3OWZ7tvB3hrzYKD-FfSqNtBjALdUZgLJcpE_Zf/exec" 
+            allow="geolocation; microphone; camera; midi; encrypted-media; clipboard-read; clipboard-write"
+            allowfullscreen>
+        </iframe>
+    </div>
+
+</body>
+</html>
