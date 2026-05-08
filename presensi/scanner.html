@@ -39,7 +39,7 @@
     #qr-reader__dashboard_section_csr span { color: white !important; }
   </style>
 </head>
-<body class="flex flex-col h-screen justify-between overflow-hidden">
+<body class="flex flex-col h-[100dvh] justify-between overflow-hidden">
 
   <!-- Header -->
   <header class="p-4 bg-slate-800 shadow-lg text-center z-10">
@@ -60,7 +60,7 @@
   </main>
 
   <!-- Footer / Controls -->
-  <footer class="p-6 bg-slate-800 text-center z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.2)]">
+  <footer class="px-6 pt-6 pb-12 bg-slate-800 text-center z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.2)]">
     <button onclick="closeScanner()" class="w-full max-w-sm mx-auto bg-red-500/10 hover:bg-red-500/20 border border-red-500/50 text-red-400 font-bold py-3.5 px-8 rounded-2xl transition-all flex items-center justify-center shadow-lg">
       <i class="fa-solid fa-xmark mr-2 text-xl"></i> Tutup Scanner
     </button>
