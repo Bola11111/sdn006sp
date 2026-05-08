@@ -73,7 +73,8 @@
     // --- 1. AMBIL PARAMETER DARI URL ---
     const urlParams = new URLSearchParams(window.location.search);
     const gasUrl = urlParams.get('gas_url');
-    const scannedBy = urlParams.get('scanned_by') || 'Petugas Tidak Diketahui';
+    const akunId = urlParams.get('akun_id');
+    const namaPetugas = urlParams.get('nama_petugas') || 'Petugas Tidak Diketahui';
 
     let html5QrCode;
     let isProcessing = false;
@@ -86,7 +87,7 @@
         return;
       }
 
-      document.getElementById('infoPetugas').innerHTML = `<i class="fa-solid fa-user-tag mr-1"></i> ${scannedBy}`;
+      document.getElementById('infoPetugas').innerHTML = `<i class="fa-solid fa-user-tag mr-1"></i> ${namaPetugas}`;
       startScanner();
     });
 
@@ -128,7 +129,7 @@
       // Kirim Data ke API GAS via Fetch Background
       fetch(gasUrl, {
         method: 'POST',
-        body: JSON.stringify({ action: 'recordAttendance', qrCode: decodedText, scannedBy: scannedBy })
+        body: JSON.stringify({ action: 'recordAttendance', qrCode: decodedText, akunId: akunId })
       })
       .then(response => response.json())
       .then(data => {
