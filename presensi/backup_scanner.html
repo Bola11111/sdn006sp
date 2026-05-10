@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -74,6 +74,9 @@
     </button>
   </footer>
 
+  <!-- Audio Beep -->
+  <audio id="beep-sound" src="https://www.soundjay.com/buttons/sounds/beep-07a.mp3" preload="auto"></audio>
+
   <script>
     // --- 1. AMBIL PARAMETER DARI URL ---
     const urlParams = new URLSearchParams(window.location.search);
@@ -83,29 +86,6 @@
 
     let html5QrCode;
     let isProcessing = false;
-    
-    // Inisialisasi Web Audio API (Mesin Suara Bawaan Browser)
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    function playBeep() {
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // Frekuensi 880Hz (Nada A)
-      
-      gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.1); // Durasi beep 0.1 detik
-    }
 
     document.addEventListener("DOMContentLoaded", () => {
       // Jika diakses tanpa parameter (misal buka langsung tidak dari web utama), tolak akses
@@ -121,10 +101,14 @@
 
     // --- 1.5 FUNGSI PEMBUKA KUNCI AUDIO (Bypass Autoplay) ---
     function initScanner() {
-      // Buka gembok Web Audio API
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      // Mainkan audio kosong untuk membobol kunci browser
+      const beep = document.getElementById('beep-sound');
+      beep.volume = 0; // Matikan suara sementara
+      beep.play().then(() => {
+        beep.pause();
+        beep.currentTime = 0;
+        beep.volume = 1; // Kembalikan volume ke maksimal
+      }).catch(e => console.log("Gagal memancing audio:", e));
 
       // Sembunyikan overlay & ubah status
       document.getElementById('start-overlay').style.display = 'none';
@@ -163,8 +147,8 @@
         html5QrCode.pause();
       }
 
-      // Mainkan suara beep (Sintetis anti-gagal)
-      playBeep();
+      // Mainkan suara beep
+      document.getElementById('beep-sound').play().catch(e => console.log("Audio autoplay diblokir", e));
 
       const statusEl = document.getElementById('scan-status');
       statusEl.innerHTML = `<span class="text-blue-400 font-bold"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Mencatat: ${decodedText}...</span>`;
@@ -203,4 +187,4 @@
     }
   </script>
 </body>
-</html>
+</html> -->
