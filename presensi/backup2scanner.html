@@ -80,7 +80,6 @@
     const gasUrl = urlParams.get('gas_url');
     const akunId = urlParams.get('akun_id');
     const namaPetugas = urlParams.get('nama_petugas') || 'Petugas Tidak Diketahui';
-    const tipeScan = urlParams.get('tipe_scan');
 
     let html5QrCode;
     let isProcessing = false;
@@ -170,14 +169,10 @@
       const statusEl = document.getElementById('scan-status');
       statusEl.innerHTML = `<span class="text-blue-400 font-bold"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Mencatat: ${decodedText}...</span>`;
 
-      let actionName = tipeScan ? 'recordAttendancePegawai' : 'recordAttendance';
-      let payloadObj = { action: actionName, qrCode: decodedText, akunId: akunId };
-      if (tipeScan) payloadObj.tipeScan = tipeScan;
-
       // Kirim Data ke API GAS via Fetch Background
       fetch(gasUrl, {
         method: 'POST',
-        body: JSON.stringify(payloadObj)
+        body: JSON.stringify({ action: 'recordAttendance', qrCode: decodedText, akunId: akunId })
       })
       .then(response => response.json())
       .then(data => {
