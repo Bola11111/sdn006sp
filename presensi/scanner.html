@@ -53,10 +53,9 @@
   <main class="flex-grow flex flex-col justify-center p-4 relative">
     <!-- Overlay Aktifkan Scanner (Untuk Bypass Audio Autoplay Browser) -->
     <div id="start-overlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/95 m-4 border border-slate-700 rounded-[1.5rem]">
-      <button onclick="initScanner()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-8 rounded-full shadow-[0_0_25px_rgba(37,99,235,0.4)] transition-all transform hover:scale-105">
-        <i class="fa-solid fa-power-off mr-2 text-lg"></i> Aktifkan Scanner
-      </button>
-      <p class="text-xs text-slate-400 mt-5 font-medium"><i class="fa-solid fa-volume-high mr-1"></i> Wajib diketuk agar suara Beep aktif</p>
+       <!-- Isi dari overlay ini dikendalikan oleh JS Fetch Cache -->
+       <i class="fa-solid fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
+       <p class="text-slate-300 font-bold">Menyiapkan Scanner...</p>
     </div>
 
     <div id="qr-reader"></div>
@@ -84,28 +83,25 @@
 
     let html5QrCode;
     let isProcessing = false;
+    let localCache = null; // BUKU SAKU DIGITAL UNTUK SCANNER
     
     // Inisialisasi Web Audio API (Mesin Suara Bawaan Browser)
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    function playBeep() {
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // Frekuensi 880Hz (Nada A)
-      
-      gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.1); // Durasi beep 0.1 detik
+    function playSuccessBeep() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+      gain.gain.setValueAtTime(1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    function playErrorBeep() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+      gain.gain.setValueAtTime(1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.3);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -118,7 +114,33 @@
       }
 
       document.getElementById('infoPetugas').innerHTML = `<i class="fa-solid fa-user-tag mr-1"></i> ${namaPetugas}`;
+      fetchScannerCache();
     });
+    
+    // --- 1.2 FUNGSI DOWNLOAD CACHE (Buku Saku) ---
+    function fetchScannerCache() {
+      const btnOverlay = document.getElementById('start-overlay');
+      btnOverlay.innerHTML = `<div class="text-center p-6"><i class="fa-solid fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i><p class="text-slate-200 font-bold text-lg">Mempersiapkan Data...</p><p class="text-xs text-slate-400 mt-2">Mengunduh buku saku agar<br>pemindaian 10x lebih instan.</p></div>`;
+
+      fetch(gasUrl, { method: 'POST', body: JSON.stringify({ action: 'getScannerCache', akunId: akunId, tipeScan: tipeScan }) })
+      .then(r => r.json())
+      .then(res => {
+         if (res.status === 'success') {
+            localCache = res.data;
+            btnOverlay.innerHTML = `
+              <button onclick="initScanner()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-8 rounded-full shadow-[0_0_25px_rgba(37,99,235,0.4)] transition-all transform hover:scale-105">
+                <i class="fa-solid fa-power-off mr-2 text-lg"></i> Aktifkan Kamera
+              </button>
+              <p class="text-xs text-slate-400 mt-5 font-medium"><i class="fa-solid fa-bolt mr-1 text-yellow-400"></i> Mode Instan Aktif</p>
+            `;
+         } else {
+            btnOverlay.innerHTML = `<p class="text-red-400 font-bold text-center px-4"><i class="fa-solid fa-triangle-exclamation mr-1 text-2xl mb-2 block"></i> ${res.message}</p>`;
+         }
+      })
+      .catch(err => {
+         btnOverlay.innerHTML = `<p class="text-red-400 font-bold text-center px-4"><i class="fa-solid fa-wifi mr-1 text-2xl mb-2 block"></i> Gagal terhubung ke server.</p>`;
+      });
+    }
 
     // --- 1.5 FUNGSI PEMBUKA KUNCI AUDIO (Bypass Autoplay) ---
     function initScanner() {
@@ -164,37 +186,88 @@
         html5QrCode.pause();
       }
 
-      // Mainkan suara beep (Sintetis anti-gagal)
-      playBeep();
+      const decodedClean = String(decodedText).replace(/'/g, '').trim();
+
+      // --- MODE INSTAN: CEK DENGAN BUKU SAKU DIGITAL ---
+      if (localCache) {
+         if (localCache.tipeScan) {
+            // PEGAWAI SCAN STATIS
+            if (decodedClean !== localCache.expectedQr) {
+               playErrorBeep(); Swal.fire({toast:true, position:'top', icon:'error', title:'QR Salah', text:'Pastikan scan QR Resmi Sekolah', showConfirmButton:false, timer:1500}); resumeScanner(1500); return;
+            }
+            if (localCache.tipeScan === 'MASUK' && localCache.sudahMasuk) {
+               playErrorBeep(); Swal.fire({toast:true, position:'top', icon:'warning', title:'Sudah Absen', text:'Anda sudah absen masuk hari ini.', showConfirmButton:false, timer:1500}); resumeScanner(1500); return;
+            }
+            if (localCache.tipeScan === 'PULANG' && localCache.sudahPulang) {
+               playErrorBeep(); Swal.fire({toast:true, position:'top', icon:'warning', title:'Sudah Absen', text:'Anda sudah absen pulang hari ini.', showConfirmButton:false, timer:1500}); resumeScanner(1500); return;
+            }
+         } else if (localCache.role === 'siswa') {
+            // SISWA SCAN MANDIRI
+            if (decodedClean !== localCache.expectedToken) {
+               playErrorBeep(); Swal.fire({toast:true, position:'top', icon:'error', title:'QR Kadaluarsa', text:'QR di layar sudah tidak valid.', showConfirmButton:false, timer:1500}); resumeScanner(1500); return;
+            }
+            if (localCache.sudahScan) {
+               playErrorBeep(); Swal.fire({toast:true, position:'top', icon:'warning', title:'Sudah Absen', text:'Anda sudah tercatat hadir hari ini.', showConfirmButton:false, timer:1500}); resumeScanner(1500); return;
+            }
+         } else {
+            // GURU/ADMIN SCAN KARTU SISWA (ESTAFET MASSAL)
+            const student = localCache.students[decodedClean];
+            if (!student) {
+               playErrorBeep(); Swal.fire({toast:true, position:'top', icon:'error', title:'Tidak Dikenal', text:'Siswa tidak terdaftar di sistem.', showConfirmButton:false, timer:1500}); resumeScanner(1500); return;
+            }
+            if (localCache.scannedToday[student.id]) {
+               playErrorBeep(); Swal.fire({toast:true, position:'top', icon:'warning', title:'Sudah Absen', text:`${student.nama} sudah diabsen.`, showConfirmButton:false, timer:1500}); resumeScanner(1500); return;
+            }
+
+            // Valid! Update lokal, bunyi sukses, lanjut cepat!
+            localCache.scannedToday[student.id] = true;
+            playSuccessBeep();
+            Swal.fire({toast:true, position:'top', icon:'success', title:'Hadir', text:`${student.nama} (${student.kelas})`, showConfirmButton:false, timer:800});
+            
+            // Tembak server gaib
+            fireBackgroundAPI(decodedClean, 'recordAttendance');
+            resumeScanner(800);
+            return;
+         }
+      }
+
+      // --- FALLBACK: JIKA BUKAN GURU (ATAU DATA PERLU KONFIRMASI JAM 서버) ---
 
       const statusEl = document.getElementById('scan-status');
-      statusEl.innerHTML = `<span class="text-blue-400 font-bold"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Mencatat: ${decodedText}...</span>`;
+      statusEl.innerHTML = `<span class="text-blue-400 font-bold"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Mencatat...</span>`;
+      playSuccessBeep();
 
       let actionName = tipeScan ? 'recordAttendancePegawai' : 'recordAttendance';
       let payloadObj = { action: actionName, qrCode: decodedText, akunId: akunId };
       if (tipeScan) payloadObj.tipeScan = tipeScan;
 
-      // Kirim Data ke API GAS via Fetch Background
-      fetch(gasUrl, {
-        method: 'POST',
-        body: JSON.stringify(payloadObj)
-      })
+      fetch(gasUrl, { method: 'POST', body: JSON.stringify(payloadObj) })
       .then(response => response.json())
       .then(data => {
-        // Munculkan notifikasi Toast ringan (tidak menutupi layar)
+        if(data.status === 'success' && localCache) {
+           if(tipeScan === 'MASUK') localCache.sudahMasuk = true;
+           if(tipeScan === 'PULANG') localCache.sudahPulang = true;
+           if(localCache.role === 'siswa') localCache.sudahScan = true;
+        }
         Swal.fire({ toast: true, position: 'top', icon: data.status === 'success' ? 'success' : 'error', title: data.status === 'success' ? 'Berhasil' : 'Gagal', text: data.message, showConfirmButton: false, timer: 1500 });
       })
       .catch(error => {
         Swal.fire({ toast: true, position: 'top', icon: 'error', title: 'Error Jaringan', text: 'Gagal menghubungi server.', showConfirmButton: false, timer: 1500 });
       })
-      .finally(() => {
-        // ESTAFET MODE: Lanjutkan kamera otomatis setelah 1.5 detik
-        setTimeout(() => {
-          isProcessing = false;
-          if (html5QrCode.getState() === Html5QrcodeScannerState.PAUSED) html5QrCode.resume();
-          statusEl.innerHTML = '<span class="text-green-400 font-medium"><i class="fa-solid fa-camera mr-1"></i> Siap memindai berikutnya...</span>';
-        }, 1500);
-      });
+      .finally(() => resumeScanner(1500));
+    }
+
+    function fireBackgroundAPI(qrCodeText, actionName) {
+      let payloadObj = { action: actionName, qrCode: qrCodeText, akunId: akunId };
+      fetch(gasUrl, { method: 'POST', body: JSON.stringify(payloadObj) }).catch(e => console.warn(e));
+    }
+
+    function resumeScanner(ms) {
+      setTimeout(() => {
+        isProcessing = false;
+        if (html5QrCode && html5QrCode.getState() === Html5QrcodeScannerState.PAUSED) html5QrCode.resume();
+        document.getElementById('scan-status').innerHTML = '<span class="text-green-400 font-medium"><i class="fa-solid fa-camera mr-1"></i> Siap memindai berikutnya...</span>';
+      }, ms);
     }
 
     // --- 4. TUTUP TAB ---
