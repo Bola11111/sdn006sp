@@ -209,6 +209,16 @@
             if (localCache.sudahScan) {
                playErrorBeep(); Swal.fire({toast:true, position:'top', icon:'warning', title:'Sudah Absen', text:'Anda sudah tercatat hadir hari ini.', showConfirmButton:false, timer:1500}); resumeScanner(1500); return;
             }
+
+            // Valid! Update lokal, bunyi sukses, lanjut cepat (Tembak Gaib)!
+            localCache.sudahScan = true;
+            playSuccessBeep();
+            Swal.fire({toast:true, position:'top', icon:'success', title:'Hadir', text:'Kehadiran mandiri tercatat.', showConfirmButton:false, timer:1500});
+            
+            // Tembak server gaib secara background
+            fireBackgroundAPI(decodedClean, 'recordAttendance');
+            resumeScanner(1500);
+            return;
          } else {
             // GURU/ADMIN SCAN KARTU SISWA (ESTAFET MASSAL)
             const student = localCache.students[decodedClean];
