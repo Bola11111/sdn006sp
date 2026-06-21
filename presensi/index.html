@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Presensi</title>
+    <title>Aplikasi Surat Mutasi - SDN 006</title>
+    
+    <!-- Favicon kustom menggunakan Emoji (Ubah dengan emoji lain jika ingin mengganti) -->
+    <!-- <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E💻%3C/text%3E%3C/svg%3E"> -->
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -42,11 +46,12 @@
     <div id="app-container">
         <div class="loading-text">Memuat Aplikasi...</div>
         
-        <!-- Ganti URL_GAS dengan URL /exec -->
+        <!-- Ganti URL_GAS dengan URL /exec. Ditambahkan event onload untuk menyembunyikan teks loading secara otomatis -->
         <iframe 
             src="https://script.google.com/macros/s/AKfycbwESb4s0KMVWNeQm8d0aTTj9kNGB8V8p1pyasNt8dbZg_O61KFOVTQtJdrZX9xwdPkNYw/exec" 
             allow="geolocation; microphone; camera; midi; encrypted-media; clipboard-read; clipboard-write"
-            allowfullscreen>
+            allowfullscreen
+            onload="document.querySelector('.loading-text').style.display='none';">
         </iframe>
     </div>
 
