@@ -120,7 +120,7 @@
     // --- 1.2 FUNGSI DOWNLOAD CACHE (Buku Saku) ---
     function fetchScannerCache() {
       const btnOverlay = document.getElementById('start-overlay');
-      btnOverlay.innerHTML = `<div class="text-center p-6"><i class="fa-solid fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i><p class="text-slate-200 font-bold text-lg">Mempersiapkan Data...</p><p class="text-xs text-slate-400 mt-2">Mengunduh buku saku agar<br>pemindaian 10x lebih instan.</p></div>`;
+      btnOverlay.innerHTML = `<div class="text-center p-6"><i class="fa-solid fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i><p class="text-slate-200 font-bold text-lg">Mempersiapkan Data...</p><p class="text-xs text-slate-400 mt-2">harap tunggu...</p></div>`;
 
       fetch(gasUrl, { method: 'POST', body: JSON.stringify({ action: 'getScannerCache', akunId: akunId, tipeScan: tipeScan }) })
       .then(r => r.json())
