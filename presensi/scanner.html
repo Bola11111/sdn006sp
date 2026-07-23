@@ -154,7 +154,7 @@
                    const distance = getDistanceFromLatLonInM(userLat, userLng, targetLat, targetLng);
                    
                    if (distance <= radiusMax) {
-                      renderStartButton(btnOverlay, `Lokasi Sesuai (${Math.round(distance)}m)`);
+                      initScanner();
                    } else {
                       btnOverlay.innerHTML = `
                         <div class="text-center p-6">
@@ -184,7 +184,7 @@
           }
        } else {
           // Jika fitur GPS di pengaturan dinonaktifkan Admin
-          renderStartButton(btnOverlay, "Mode Instan Aktif");
+          initScanner();
        }
     }
 
